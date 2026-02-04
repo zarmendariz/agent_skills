@@ -3,17 +3,96 @@
 Skill Packager - Creates a distributable .skill file of a skill folder
 
 Usage:
-    uv run package_skill.py <path/to/skill-folder> [output-directory]
+    uv run .kilocode/skills/skill-creator/scripts/package_skill.py <path/to/skill-folder> [output-directory]
 
 Example:
-    uv run package_skill.py skills/public/my-skill
-    uv run package_skill.py skills/public/my-skill ./dist
+    uv run .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/my-skill
+    uv run .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/my-skill skill-files/
 """
 
 import sys
+import os
 import zipfile
+import re
+import yaml
 from pathlib import Path
-from quick_validate import validate_skill
+
+
+def validate_skill(skill_path):
+    """Basic validation of a skill"""
+    skill_path = Path(skill_path)
+
+    # Check SKILL.md exists
+    skill_md = skill_path / 'SKILL.md'
+    if not skill_md.exists():
+        return False, "SKILL.md not found"
+
+    # Read and validate frontmatter
+    content = skill_md.read_text()
+    if not content.startswith('---'):
+        return False, "No YAML frontmatter found"
+
+    # Extract frontmatter
+    match = re.match(r'^---\n(.*?)\n---', content, re.DOTALL)
+    if not match:
+        return False, "Invalid frontmatter format"
+
+    frontmatter_text = match.group(1)
+
+    # Parse YAML frontmatter
+    try:
+        frontmatter = yaml.safe_load(frontmatter_text)
+        if not isinstance(frontmatter, dict):
+            return False, "Frontmatter must be a YAML dictionary"
+    except yaml.YAMLError as e:
+        return False, f"Invalid YAML in frontmatter: {e}"
+
+    # Define allowed properties
+    ALLOWED_PROPERTIES = {'name', 'description', 'license', 'allowed-tools', 'metadata'}
+
+    # Check for unexpected properties (excluding nested keys under metadata)
+    unexpected_keys = set(frontmatter.keys()) - ALLOWED_PROPERTIES
+    if unexpected_keys:
+        return False, (
+            f"Unexpected key(s) in SKILL.md frontmatter: {', '.join(sorted(unexpected_keys))}. "
+            f"Allowed properties are: {', '.join(sorted(ALLOWED_PROPERTIES))}"
+        )
+
+    # Check required fields
+    if 'name' not in frontmatter:
+        return False, "Missing 'name' in frontmatter"
+    if 'description' not in frontmatter:
+        return False, "Missing 'description' in frontmatter"
+
+    # Extract name for validation
+    name = frontmatter.get('name', '')
+    if not isinstance(name, str):
+        return False, f"Name must be a string, got {type(name).__name__}"
+    name = name.strip()
+    if name:
+        # Check naming convention (hyphen-case: lowercase with hyphens)
+        if not re.match(r'^[a-z0-9-]+$', name):
+            return False, f"Name '{name}' should be hyphen-case (lowercase letters, digits, and hyphens only)"
+        if name.startswith('-') or name.endswith('-') or '--' in name:
+            return False, f"Name '{name}' cannot start/end with hyphen or contain consecutive hyphens"
+        # Check name length (max 64 characters per spec)
+        if len(name) > 64:
+            return False, f"Name is too long ({len(name)} characters). Maximum is 64 characters."
+
+    # Extract and validate description
+    description = frontmatter.get('description', '')
+    if not isinstance(description, str):
+        return False, f"Description must be a string, got {type(description).__name__}"
+    description = description.strip()
+    if description:
+        # Check for angle brackets
+        if '<' in description or '>' in description:
+            return False, "Description cannot contain angle brackets (< or >)"
+        # Check description length (max 1024 characters per spec)
+        if len(description) > 1024:
+            return False, f"Description is too long ({len(description)} characters). Maximum is 1024 characters."
+
+    return True, "Skill is valid!"
 
 
 def package_skill(skill_path, output_dir=None):
@@ -84,18 +163,18 @@ def package_skill(skill_path, output_dir=None):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: uv run package_skill.py <path/to/skill-folder> [output-directory]")
+        print("Usage: uv run .kilocode/skills/skill-creator/scripts/package_skill.py <path/to/skill-folder> [output-directory]")
         print("\nExample:")
-        print("  uv run package_skill.py skills/public/my-skill")
-        print("  uv run package_skill.py skills/public/my-skill ./dist")
+        print("  uv run .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/my-skill")
+        print("  uv run .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/my-skill skill-files/")
         sys.exit(1)
 
     skill_path = sys.argv[1]
-    output_dir = sys.argv[2] if len(sys.argv) > 2 else None
+    # Default output directory to skill-files/ if not provided
+    output_dir = sys.argv[2] if len(sys.argv) > 2 else "skill-files"
 
     print(f"📦 Packaging skill: {skill_path}")
-    if output_dir:
-        print(f"   Output directory: {output_dir}")
+    print(f"   Output directory: {output_dir}")
     print()
 
     result = package_skill(skill_path, output_dir)

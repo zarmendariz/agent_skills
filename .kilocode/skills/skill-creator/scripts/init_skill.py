@@ -3,15 +3,16 @@
 Skill Initializer - Creates a new skill from template
 
 Usage:
-    uv run init_skill.py <skill-name> --path <path>
+    uv run .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> [--path <path>]
 
 Examples:
-    uv run init_skill.py my-new-skill --path skills/public
-    uv run init_skill.py my-api-helper --path skills/private
-    uv run init_skill.py custom-skill --path /custom/location
+    uv run .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill
+    uv run .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill --path .kilocode/skills
+    uv run .kilocode/skills/skill-creator/scripts/init_skill.py custom-skill --path /custom/location
 """
 
 import sys
+import os
 from pathlib import Path
 
 
@@ -275,21 +276,25 @@ def init_skill(skill_name, path):
 
 
 def main():
-    if len(sys.argv) < 4 or sys.argv[2] != '--path':
-        print("Usage: uv run init_skill.py <skill-name> --path <path>")
+    if len(sys.argv) < 2:
+        print("Usage: uv run .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> [--path <path>]")
         print("\nSkill name requirements:")
         print("  - Hyphen-case identifier (e.g., 'data-analyzer')")
         print("  - Lowercase letters, digits, and hyphens only")
         print("  - Max 40 characters")
         print("  - Must match directory name exactly")
         print("\nExamples:")
-        print("  uv run init_skill.py my-new-skill --path skills/public")
-        print("  uv run init_skill.py my-api-helper --path skills/private")
-        print("  uv run init_skill.py custom-skill --path /custom/location")
+        print("  uv run .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill")
+        print("  uv run .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill --path .kilocode/skills")
+        print("  uv run .kilocode/skills/skill-creator/scripts/init_skill.py custom-skill --path /custom/location")
         sys.exit(1)
 
     skill_name = sys.argv[1]
-    path = sys.argv[3]
+    
+    # Determine path: use --path argument if provided, otherwise default to .kilocode/skills
+    path = ".kilocode/skills"
+    if len(sys.argv) >= 4 and sys.argv[2] == '--path':
+        path = sys.argv[3]
 
     print(f"🚀 Initializing skill: {skill_name}")
     print(f"   Location: {path}")

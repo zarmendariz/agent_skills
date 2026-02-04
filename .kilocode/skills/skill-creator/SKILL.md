@@ -109,7 +109,7 @@ A skill should only contain essential files that directly support its functional
 - CHANGELOG.md
 - etc.
 
-The skill should only contain the information needed for an AI agent to do the job at hand. It should not contain auxilary context about the process that went into creating it, setup and testing procedures, user-facing documentation, etc. Creating additional documentation files just adds clutter and confusion.
+The skill should only contain the information needed for an AI agent to do the job at hand. It should not contain auxiliary context about the process that went into creating it, setup and testing procedures, user-facing documentation, etc. Creating additional documentation files just adds clutter and confusion.
 
 ### Progressive Disclosure Design Principle
 
@@ -264,12 +264,18 @@ When creating a new skill from scratch, always run the `init_skill.py` script. T
 Usage:
 
 ```nu
-uv run scripts/init_skill.py <skill-name> --path <output-directory>
+uv run .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name>
+```
+
+Optional custom path:
+
+```nu
+uv run .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> --path <output-directory>
 ```
 
 The script:
 
-- Creates the skill directory at the specified path
+- Creates the skill directory at `.kilocode/skills/<skill-name>` by default
 - Generates a SKILL.md template with proper frontmatter and TODO placeholders
 - Creates example resource directories: `scripts/`, `references/`, and `assets/`
 - Adds example files in each directory that can be customized or deleted
@@ -322,13 +328,13 @@ Write instructions for using the skill and its bundled resources.
 Once development of the skill is complete, it must be packaged into a distributable .skill file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
 
 ```nu
-uv run scripts/package_skill.py <path/to/skill-folder>
+uv run .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/<skill-name>
 ```
 
-Optional output directory specification:
+Optional output directory specification (defaults to `skill-files/`):
 
 ```nu
-uv run scripts/package_skill.py <path/to/skill-folder> ./dist
+uv run .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/<skill-name> skill-files/
 ```
 
 The packaging script will:
