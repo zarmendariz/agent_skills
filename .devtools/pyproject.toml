@@ -1,0 +1,8 @@
+[project]
+name = "agent-skills-devtools"
+version = "0.1.0"
+description = "Shared Python development tooling for agent skills"
+requires-python = ">=3.13"
+dependencies = [
+    "pyyaml>=6.0",
+]

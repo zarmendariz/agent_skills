@@ -3,12 +3,12 @@
 Skill Initializer - Creates a new skill from template
 
 Usage:
-    uv run .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> [--path <path>]
+    uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> [--path <path>]
 
 Examples:
-    uv run .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill
-    uv run .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill --path .kilocode/skills
-    uv run .kilocode/skills/skill-creator/scripts/init_skill.py custom-skill --path /custom/location
+    uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill
+    uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill --path .kilocode/skills
+    uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py custom-skill --path /custom/location
 """
 
 import sys
@@ -277,16 +277,16 @@ def init_skill(skill_name, path):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: uv run .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> [--path <path>]")
+        print("Usage: uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> [--path <path>]")
         print("\nSkill name requirements:")
         print("  - Hyphen-case identifier (e.g., 'data-analyzer')")
         print("  - Lowercase letters, digits, and hyphens only")
         print("  - Max 40 characters")
         print("  - Must match directory name exactly")
         print("\nExamples:")
-        print("  uv run .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill")
-        print("  uv run .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill --path .kilocode/skills")
-        print("  uv run .kilocode/skills/skill-creator/scripts/init_skill.py custom-skill --path /custom/location")
+        print("  uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill")
+        print("  uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py my-new-skill --path .kilocode/skills")
+        print("  uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py custom-skill --path /custom/location")
         sys.exit(1)
 
     skill_name = sys.argv[1]

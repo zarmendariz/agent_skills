@@ -1,7 +1,0 @@
-LICENSE.txt
-pyproject.toml
-skill_creator.egg-info/PKG-INFO
-skill_creator.egg-info/SOURCES.txt
-skill_creator.egg-info/dependency_links.txt
-skill_creator.egg-info/requires.txt
-skill_creator.egg-info/top_level.txt

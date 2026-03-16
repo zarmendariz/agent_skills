@@ -1,0 +1,8 @@
+# Python / uv
+.devtools/.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Skill output
+skill-files/

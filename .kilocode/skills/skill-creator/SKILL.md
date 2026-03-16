@@ -264,13 +264,13 @@ When creating a new skill from scratch, always run the `init_skill.py` script. T
 Usage:
 
 ```nu
-uv run .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name>
+uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name>
 ```
 
 Optional custom path:
 
 ```nu
-uv run .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> --path <output-directory>
+uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> --path <output-directory>
 ```
 
 The script:
@@ -328,13 +328,13 @@ Write instructions for using the skill and its bundled resources.
 Once development of the skill is complete, it must be packaged into a distributable .skill file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
 
 ```nu
-uv run .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/<skill-name>
+uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/<skill-name>
 ```
 
 Optional output directory specification (defaults to `skill-files/`):
 
 ```nu
-uv run .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/<skill-name> skill-files/
+uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/<skill-name> skill-files/
 ```
 
 The packaging script will:

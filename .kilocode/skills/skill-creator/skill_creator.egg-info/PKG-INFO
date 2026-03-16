@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: skill-creator
-Version: 1.0.0
-Summary: Skill creator utilities for managing skill packages
-Requires-Python: >=3.8
-License-File: LICENSE.txt
-Requires-Dist: pyyaml>=6.0
-Dynamic: license-file
