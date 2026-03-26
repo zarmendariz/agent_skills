@@ -6,3 +6,16 @@ __pycache__/
 
 # Skill output
 skill-files/
+
+# KiloCode global config - runtime/secret files
+.kilocode/node_modules/
+.kilocode/bun.lock
+.kilocode/package.json
+.kilocode/cli/config.json
+.kilocode/cli/global/global-state.json
+.kilocode/cli/global/secrets.json
+.kilocode/cli/global/cache/
+.kilocode/cli/global/tasks/
+.kilocode/cli/global/workspaces/
+.kilocode/cli/history.json
+.kilocode/cli/logs/

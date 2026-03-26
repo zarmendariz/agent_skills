@@ -1,0 +1,25 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "provider": {
+    "kilo": {
+      "options": {}
+    }
+  },
+  "mcp": {},
+  "permission": {
+    "*": "ask",
+    "bash": {
+      "*": "ask",
+      "rm *": "deny"
+    },
+    "edit": "deny",
+    "read": {
+      "*": "allow"
+    },
+    "todowrite": "allow"
+  },
+  "tools": {
+    "github-triage": false,
+    "github-pr-search": false
+  }
+}
