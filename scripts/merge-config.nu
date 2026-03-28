@@ -1,10 +1,10 @@
 #!/usr/bin/env nu
 # merge-config.nu
 # Pulls global kilocode / opencode configuration into this repo.
-# Run from the repo root:  nu merge-config.nu
+# Run from the repo root:  nu scripts/merge-config.nu
 
 def main [] {
-    let repo_root = ($env.FILE_PWD? | default (pwd))
+    let repo_root = ($env.FILE_PWD | path dirname)
     let kilocode_src  = ($env.HOME | path join ".kilocode")
     let opencode_src  = ($env.HOME | path join ".config" "kilo" "opencode.json")
 
