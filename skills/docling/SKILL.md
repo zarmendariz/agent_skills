@@ -103,6 +103,8 @@ Options:
 - `--image-mode`: Image export (placeholder/embedded/referenced)
 - `--timeout`: Document processing timeout in seconds
 - `--force-ocr`: Replace text with OCR output
+- `--info`: Print document structure summary (element counts, headings, word count)
+- `--pipeline`: Processing pipeline (standard/vlm)
 
 ## Workflow Patterns
 
@@ -139,6 +141,11 @@ uv run --project .devtools python skills/docling/scripts/convert_document.py sca
 ### 7. Export as structured JSON
 ```bash
 uv run --project .devtools python skills/docling/scripts/convert_document.py report.pdf -f json -o report.json
+```
+
+### 8. Inspect document structure
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py report.pdf --info
 ```
 
 ## Advanced Features

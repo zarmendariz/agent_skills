@@ -22,6 +22,9 @@ Examples:
 
     # OCR a scanned document
     python convert_document.py scan.pdf --force-ocr
+
+    # Get document structure info
+    python convert_document.py report.pdf --info
 """
 
 from __future__ import annotations
@@ -109,6 +112,17 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=4,
         help="Number of CPU threads (default: 4).",
+    )
+    parser.add_argument(
+        "--info",
+        action="store_true",
+        help="Print document structure info instead of content.",
+    )
+    parser.add_argument(
+        "--pipeline",
+        choices=["standard", "vlm"],
+        default="standard",
+        help="Processing pipeline (default: standard).",
     )
     return parser
 
@@ -207,10 +221,66 @@ def convert_single(args: argparse.Namespace) -> str | list[dict]:
     result = converter.convert(args.source, **kwargs)
     doc = result.document
 
+    if args.info:
+        return document_info(doc)
+
     if args.chunk:
         return chunk_document(doc, max_tokens=args.chunk_size)
 
     return export_document(doc, args.format, image_mode=args.image_mode)
+
+
+def document_info(doc: Any) -> str:
+    """Generate a summary of document structure and metadata."""
+    d = doc.export_to_dict()
+    texts = d.get("texts", [])
+    tables = d.get("tables", [])
+    pictures = d.get("pictures", [])
+    groups = d.get("groups", [])
+
+    # Count text types
+    label_counts: dict[str, int] = {}
+    for t in texts:
+        label = t.get("label", "unknown")
+        label_counts[label] = label_counts.get(label, 0) + 1
+
+    lines = [
+        f"Document: {d.get('name', 'unknown')}",
+        f"Schema: {d.get('schema_name', 'unknown')} v{d.get('version', '?')}",
+        f"",
+        f"Content Summary:",
+        f"  Text elements: {len(texts)}",
+        f"  Tables: {len(tables)}",
+        f"  Pictures: {len(pictures)}",
+        f"  Groups: {len(groups)}",
+        f"",
+        f"Text Labels:",
+    ]
+    for label, count in sorted(label_counts.items()):
+        lines.append(f"  {label}: {count}")
+
+    # Extract headings for table of contents
+    headings = [t for t in texts if "header" in t.get("label", "")]
+    if headings:
+        lines.append("")
+        lines.append("Table of Contents:")
+        for h in headings:
+            level = h.get("label", "").replace("section_header_level_", "").replace("section_header", "1")
+            indent = "  " * (int(level) if level.isdigit() else 1)
+            lines.append(f"{indent}{h.get('text', '')}")
+
+    # Word count estimate
+    full_text = doc.export_to_text()
+    word_count = len(full_text.split())
+    char_count = len(full_text)
+    lines.extend([
+        "",
+        f"Statistics:",
+        f"  Words: ~{word_count}",
+        f"  Characters: {char_count}",
+    ])
+
+    return "\n".join(lines)
 
 
 def convert_directory(args: argparse.Namespace) -> dict[str, str]:

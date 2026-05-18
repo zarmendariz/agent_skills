@@ -855,3 +855,146 @@ class TestOutputConsistency:
         d = result.document.export_to_dict()
         assert d["schema_name"] == "DoclingDocument"
         assert "version" in d
+
+
+# ---------------------------------------------------------------------------
+# Test: Document Info Feature
+# ---------------------------------------------------------------------------
+
+
+class TestDocumentInfo:
+    """Test the --info document introspection feature."""
+
+    def test_info_returns_string(self, sample_md):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_md), "--info"])
+        result = convert_single(args)
+        assert isinstance(result, str)
+
+    def test_info_contains_document_name(self, sample_md):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_md), "--info"])
+        result = convert_single(args)
+        assert "Document:" in result
+
+    def test_info_contains_content_summary(self, sample_md):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_md), "--info"])
+        result = convert_single(args)
+        assert "Text elements:" in result
+        assert "Tables:" in result
+
+    def test_info_contains_statistics(self, sample_md):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_md), "--info"])
+        result = convert_single(args)
+        assert "Words:" in result
+        assert "Characters:" in result
+
+    def test_info_shows_headings(self, sample_docx):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_docx), "--info"])
+        result = convert_single(args)
+        assert "Table of Contents:" in result
+        assert "Section One" in result
+
+    def test_info_shows_label_counts(self, sample_docx):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_docx), "--info"])
+        result = convert_single(args)
+        assert "Text Labels:" in result
+
+    def test_info_docx_has_tables(self, sample_docx):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_docx), "--info"])
+        result = convert_single(args)
+        assert "Tables: 1" in result
+
+    def test_info_subprocess(self, sample_md):
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), str(sample_md), "--info"],
+            capture_output=True, text=True, timeout=120,
+        )
+        assert result.returncode == 0
+        assert "Document:" in result.stdout
+        assert "Words:" in result.stdout
+
+
+# ---------------------------------------------------------------------------
+# Test: Pipeline Options
+# ---------------------------------------------------------------------------
+
+
+class TestPipelineOptions:
+    """Test pipeline configuration."""
+
+    def test_parser_accepts_pipeline_standard(self):
+        from convert_document import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["test.pdf", "--pipeline", "standard"])
+        assert args.pipeline == "standard"
+
+    def test_parser_accepts_pipeline_vlm(self):
+        from convert_document import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["test.pdf", "--pipeline", "vlm"])
+        assert args.pipeline == "vlm"
+
+    def test_parser_default_pipeline(self):
+        from convert_document import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["test.pdf"])
+        assert args.pipeline == "standard"
+
+    def test_info_flag_in_parser(self):
+        from convert_document import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["test.pdf", "--info"])
+        assert args.info is True
+
+    def test_info_default_false(self):
+        from convert_document import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["test.pdf"])
+        assert args.info is False
+
+
+# ---------------------------------------------------------------------------
+# Test: Image Mode Handling
+# ---------------------------------------------------------------------------
+
+
+class TestImageModeHandling:
+    """Test image export mode enum mapping."""
+
+    def test_export_with_placeholder_mode(self, converter, sample_md):
+        from convert_document import export_document
+        result = converter.convert(str(sample_md))
+        output = export_document(result.document, "markdown", image_mode="placeholder")
+        assert isinstance(output, str)
+
+    def test_export_with_embedded_mode(self, converter, sample_md):
+        from convert_document import export_document
+        result = converter.convert(str(sample_md))
+        output = export_document(result.document, "markdown", image_mode="embedded")
+        assert isinstance(output, str)
+
+    def test_export_with_referenced_mode(self, converter, sample_md):
+        from convert_document import export_document
+        result = converter.convert(str(sample_md))
+        output = export_document(result.document, "html", image_mode="referenced")
+        assert isinstance(output, str)
+
+    def test_export_with_invalid_mode_falls_back(self, converter, sample_md):
+        from convert_document import export_document
+        result = converter.convert(str(sample_md))
+        # Invalid mode should fall back to placeholder without error
+        output = export_document(result.document, "markdown", image_mode="invalid")
+        assert isinstance(output, str)
