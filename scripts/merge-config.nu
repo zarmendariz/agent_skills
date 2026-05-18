@@ -10,8 +10,12 @@ def main [] {
 
     # ── opencode.json ────────────────────────────────────────────────────────
     let opencode_dst = ($repo_root | path join "opencode.json")
-    print $"Copying opencode.json  →  ($opencode_dst)"
-    cp $opencode_src $opencode_dst
+    if ($opencode_src | path exists) {
+        print $"Copying opencode.json  →  ($opencode_dst)"
+        cp $opencode_src $opencode_dst
+    } else {
+        print "opencode.json not found in ~/.config/kilo — skipping."
+    }
 
     # ── KiloCode skills ──────────────────────────────────────────────────────
     let skills_src = ($kilocode_src | path join "skills")

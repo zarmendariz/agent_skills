@@ -4,6 +4,11 @@ __pycache__/
 *.pyc
 *.egg-info/
 
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
 # Skill output
 skill-files/
 
