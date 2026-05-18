@@ -33,7 +33,7 @@ jobs:
 
       - name: Validate all skills
         run: |
-          uv run --project .devtools .kilocode/skills/skill-creator/scripts/quick_validate.py .kilocode/skills/skill-sync
-          uv run --project .devtools .kilocode/skills/skill-creator/scripts/quick_validate.py .kilocode/skills/nushell
-          uv run --project .devtools .kilocode/skills/skill-creator/scripts/quick_validate.py .kilocode/skills/skill-creator
-          uv run --project .devtools .kilocode/skills/skill-creator/scripts/quick_validate.py .kilocode/skills/unit-testing
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/skill-sync
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/nushell
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/skill-creator
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/unit-testing

@@ -40,9 +40,9 @@ EOF
 For scripts that need timeout control, env injection, or structured error reporting, use:
 
 ```bash
-uv run .kilocode/skills/nushell/scripts/nu_run.py 'ls | get name | first 5'
-uv run .kilocode/skills/nushell/scripts/nu_run.py /tmp/task.nu --file
-uv run .kilocode/skills/nushell/scripts/nu_run.py 'print $env.X' --env X=hello --timeout 30
+uv run skills/nushell/scripts/nu_run.py 'ls | get name | first 5'
+uv run skills/nushell/scripts/nu_run.py /tmp/task.nu --file
+uv run skills/nushell/scripts/nu_run.py 'print $env.X' --env X=hello --timeout 30
 ```
 
 Returns exit code 0 on success, non-zero on failure. Prints `--- nu_run: SUCCESS/FAILED ---` to stderr.

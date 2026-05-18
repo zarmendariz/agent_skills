@@ -6,15 +6,16 @@ Supports KiloCode CLI and GitHub Copilot CLI on Linux, macOS, and Windows.
 Auth tokens, secrets, and runtime state are never pulled.
 
 Usage:
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/pull.py --all
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/pull.py --kilocode
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/pull.py --copilot
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/pull.py --all --dry-run
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/pull.py --all --force
+    uv run --project .devtools skills/skill-sync/scripts/pull.py --all
+    uv run --project .devtools skills/skill-sync/scripts/pull.py --kilocode
+    uv run --project .devtools skills/skill-sync/scripts/pull.py --copilot
+    uv run --project .devtools skills/skill-sync/scripts/pull.py --all --dry-run
+    uv run --project .devtools skills/skill-sync/scripts/pull.py --all --force
 
 Environment variable overrides (same as deploy.py):
     KILOCODE_SKILLS_DIR        Override KiloCode global skills directory
     COPILOT_SKILLS_DIR         Override GitHub Copilot global skills directory
+    COPILOT_HOME               Override Copilot CLI home directory (default: ~/.copilot)
     COPILOT_INSTRUCTIONS_PATH  Override global copilot-instructions.md path
 """
 
@@ -31,7 +32,7 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # Add shared library to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent.parent / ".devtools"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
 from agent_skills_lib import paths as _paths  # noqa: E402
 
 
@@ -147,7 +148,7 @@ def pull_kilocode(root: Path, dry_run: bool, force: bool) -> bool:
     # Skills
     all_ok &= pull_skills(
         kilocode_skills_dir(),
-        root / ".kilocode" / "skills",
+        root / "skills",
         dry_run, force,
     )
 
@@ -182,7 +183,7 @@ def pull_copilot(root: Path, dry_run: bool, force: bool) -> bool:
     # Skills from Copilot global dir (if present)
     all_ok &= pull_skills(
         copilot_skills_dir(),
-        root / ".kilocode" / "skills",
+        root / "skills",
         dry_run, force,
     )
 

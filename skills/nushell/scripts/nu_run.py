@@ -3,7 +3,7 @@
 nu_run.py - Execute a Nushell script safely, report structured results.
 
 Usage:
-    uv run .kilocode/skills/nushell/scripts/nu_run.py <script_content_or_file> [--file] [--env KEY=VALUE ...]
+    uv run skills/nushell/scripts/nu_run.py <script_content_or_file> [--file] [--env KEY=VALUE ...]
 
 Options:
     --file          Treat first argument as a path to a .nu script file
@@ -12,9 +12,9 @@ Options:
     --quiet         Suppress the structured summary, only print stdout/stderr
 
 Examples:
-    uv run .kilocode/skills/nushell/scripts/nu_run.py 'ls | get name | first 5'
-    uv run .kilocode/skills/nushell/scripts/nu_run.py /tmp/task.nu --file
-    uv run .kilocode/skills/nushell/scripts/nu_run.py 'print $env.MY_VAR' --env MY_VAR=hello
+    uv run skills/nushell/scripts/nu_run.py 'ls | get name | first 5'
+    uv run skills/nushell/scripts/nu_run.py /tmp/task.nu --file
+    uv run skills/nushell/scripts/nu_run.py 'print $env.MY_VAR' --env MY_VAR=hello
 """
 
 import argparse

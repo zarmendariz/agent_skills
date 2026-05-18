@@ -39,8 +39,8 @@ def mock_repo_root(tmp_path):
     root = tmp_path / "repo"
     root.mkdir()
 
-    # Create .kilocode/skills/ with a sample skill
-    skills_dir = root / ".kilocode" / "skills" / "sample-skill"
+    # Create skills/ with a sample skill
+    skills_dir = root / "skills" / "sample-skill"
     skills_dir.mkdir(parents=True)
     (skills_dir / "SKILL.md").write_text(
         "---\nname: sample-skill\ndescription: A sample.\n---\n# Sample\n",

@@ -5,15 +5,16 @@ deploy.py - Push skills and configuration from repo to global CLI installations.
 Supports KiloCode CLI and GitHub Copilot CLI on Linux, macOS, and Windows.
 
 Usage:
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --all
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --kilocode
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --copilot
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --all --dry-run
-    uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --all --force
+    uv run --project .devtools skills/skill-sync/scripts/deploy.py --all
+    uv run --project .devtools skills/skill-sync/scripts/deploy.py --kilocode
+    uv run --project .devtools skills/skill-sync/scripts/deploy.py --copilot
+    uv run --project .devtools skills/skill-sync/scripts/deploy.py --all --dry-run
+    uv run --project .devtools skills/skill-sync/scripts/deploy.py --all --force
 
 Environment variable overrides:
-    KILOCODE_SKILLS_DIR      Override KiloCode global skills directory
-    COPILOT_SKILLS_DIR       Override GitHub Copilot global skills directory
+    KILOCODE_SKILLS_DIR        Override KiloCode global skills directory
+    COPILOT_SKILLS_DIR         Override GitHub Copilot global skills directory
+    COPILOT_HOME               Override Copilot CLI home directory (default: ~/.copilot)
     COPILOT_INSTRUCTIONS_PATH  Override global copilot-instructions.md path
 """
 
@@ -30,7 +31,7 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # Add shared library to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent.parent / ".devtools"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
 from agent_skills_lib import paths as _paths  # noqa: E402
 
 
@@ -142,7 +143,7 @@ def deploy_kilocode(root: Path, dry_run: bool, force: bool) -> bool:
     all_ok = True
 
     # Skills
-    src_skills = root / ".kilocode" / "skills"
+    src_skills = root / "skills"
     all_ok &= copy_skills(src_skills, kilocode_skills_dir(), dry_run, force)
 
     # MCP settings
@@ -174,7 +175,7 @@ def deploy_copilot(root: Path, dry_run: bool, force: bool) -> bool:
     all_ok = True
 
     # Skills (same source, different destination)
-    src_skills = root / ".kilocode" / "skills"
+    src_skills = root / "skills"
     all_ok &= copy_skills(src_skills, copilot_skills_dir(), dry_run, force)
 
     # copilot-instructions.md

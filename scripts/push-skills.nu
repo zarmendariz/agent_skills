@@ -7,7 +7,7 @@ def main [
     --dry-run (-n)  # Show what would be copied without making changes
     --force (-f)    # Skip confirmation prompt when overwriting existing skills
 ] {
-    let repo_skills_dir = ($env.FILE_PWD | path dirname | path join ".kilocode" "skills")
+    let repo_skills_dir = ($env.FILE_PWD | path dirname | path join "skills")
     let global_skills_dir = ($env.HOME | path join ".kilocode" "skills")
 
     if not ($repo_skills_dir | path exists) {

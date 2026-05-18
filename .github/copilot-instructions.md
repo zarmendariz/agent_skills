@@ -1,6 +1,6 @@
 # Copilot Instructions
 
-This repository manages AI agent **skills** for the [Kilo AI](https://kilo.ai) platform, following the Anthropic Agent Skill specification. Skills are modular packages that extend Claude's capabilities with specialized knowledge, workflows, and tools.
+This repository manages AI agent **skills** for both [GitHub Copilot CLI](https://docs.github.com/copilot/concepts/agents/about-copilot-cli) and [KiloCode CLI](https://kilo.ai), following the Anthropic Agent Skill specification. Skills are modular packages that extend Claude's capabilities with specialized knowledge, workflows, and tools.
 
 ## Key Commands
 
@@ -14,14 +14,14 @@ uv run --project .devtools pytest
 uv run --project .devtools pytest --cov
 
 # Initialize a new skill (creates directory + template files)
-uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name>
-uv run --project .devtools .kilocode/skills/skill-creator/scripts/init_skill.py <skill-name> --path .kilocode/skills
+uv run --project .devtools skills/skill-creator/scripts/init_skill.py <skill-name>
+uv run --project .devtools skills/skill-creator/scripts/init_skill.py <skill-name> --path skills
 
 # Validate and package a skill into a distributable .skill file
-uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/<skill-name>
+uv run --project .devtools skills/skill-creator/scripts/package_skill.py skills/<skill-name>
 
 # Validate only (without packaging)
-uv run --project .devtools .kilocode/skills/skill-creator/scripts/quick_validate.py .kilocode/skills/<skill-name>
+uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/<skill-name>
 ```
 
 ### Deployment (KiloCode CLI + GitHub Copilot CLI)
@@ -30,25 +30,25 @@ Cross-platform Python scripts handle deploying to and pulling from both tool env
 
 ```bash
 # Deploy skills + config to both tools (Linux and Windows)
-uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --all
-uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --kilocode   # KiloCode only
-uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --copilot    # Copilot only
-uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --all --dry-run
-uv run --project .devtools .kilocode/skills/skill-sync/scripts/deploy.py --all --force
+uv run --project .devtools skills/skill-sync/scripts/deploy.py --all
+uv run --project .devtools skills/skill-sync/scripts/deploy.py --kilocode   # KiloCode only
+uv run --project .devtools skills/skill-sync/scripts/deploy.py --copilot    # Copilot only
+uv run --project .devtools skills/skill-sync/scripts/deploy.py --all --dry-run
+uv run --project .devtools skills/skill-sync/scripts/deploy.py --all --force
 
 # Pull config from global installs back into repo
-uv run --project .devtools .kilocode/skills/skill-sync/scripts/pull.py --all
-uv run --project .devtools .kilocode/skills/skill-sync/scripts/pull.py --all --dry-run
+uv run --project .devtools skills/skill-sync/scripts/pull.py --all
+uv run --project .devtools skills/skill-sync/scripts/pull.py --all --dry-run
 ```
 
 **Global install paths (auto-detected by scripts):**
 
-| Tool | Linux/macOS skills | Windows skills |
-|------|--------------------|----------------|
-| KiloCode CLI | `~/.kilocode/skills/` | `%USERPROFILE%\.kilocode\skills\` |
-| GitHub Copilot CLI | `~/.config/github-copilot/skills/` | `%LOCALAPPDATA%\github-copilot\skills\` |
+| Tool | Skills path | Instructions |
+|------|-------------|--------------|
+| KiloCode CLI | `~/.kilocode/skills/` | N/A |
+| GitHub Copilot CLI | `~/.copilot/skills/` | `~/.copilot/copilot-instructions.md` |
 
-Override via env vars: `KILOCODE_SKILLS_DIR`, `COPILOT_SKILLS_DIR`, `COPILOT_INSTRUCTIONS_PATH`.
+Override via env vars: `KILOCODE_SKILLS_DIR`, `COPILOT_SKILLS_DIR`, `COPILOT_HOME`, `COPILOT_INSTRUCTIONS_PATH`.
 
 ### Legacy Nushell scripts (KiloCode CLI only)
 
@@ -67,11 +67,13 @@ Prefer the Python deploy scripts above for cross-platform and cross-tool support
 ## Architecture
 
 ```
-.kilocode/skills/          # All skills live here (source of truth for both CLI tools)
+skills/                    # All skills live here (source of truth for both CLI tools)
   skill-sync/              # Deploy/pull skill — manages global installs
   nushell/                 # Nushell language skill
   skill-creator/           # Skill authoring workflow
   unit-testing/            # Embedded C unit testing skill
+.kilocode/
+  cli/global/settings/     # KiloCode CLI settings (mcp_settings.json, custom_modes.yaml)
 .devtools/                 # Python tooling (pyproject.toml, uv.lock) — Python 3.13+
   agent_skills_lib/        # Shared library (validation, path resolution)
 .github/
@@ -82,7 +84,7 @@ scripts/                   # Nushell repo-management utilities (KiloCode only)
 opencode.json              # KiloCode/OpenCode config (synced from ~/.config/kilo/)
 ```
 
-**Skills are the primary artifact.** The same skills are deployed to both KiloCode CLI and GitHub Copilot CLI global locations via `deploy.py`. The `.kilocode/skills/` directory is the canonical source.
+**Skills are the primary artifact.** The same skills are deployed to both KiloCode CLI (`~/.kilocode/skills/`) and GitHub Copilot CLI (`~/.copilot/skills/`) via `deploy.py`. The `skills/` directory is the canonical source.
 
 ## Skill Conventions
 
@@ -128,7 +130,7 @@ Do **not** add auxiliary docs (README, CHANGELOG, INSTALLATION_GUIDE, etc.) insi
 
 ## Nushell Scripts
 
-The `scripts/` utilities are written in Nushell (`.nu`). Run them with `nu scripts/<script>.nu`. The `push-skills.nu` script copies from `.kilocode/skills/` to `~/.kilocode/skills/`; `merge-config.nu` pulls the reverse direction (global config → repo).
+The `scripts/` utilities are written in Nushell (`.nu`). Run them with `nu scripts/<script>.nu`. The `push-skills.nu` script copies from `skills/` to `~/.kilocode/skills/`; `merge-config.nu` pulls the reverse direction (global config → repo).
 
 ## opencode.json
 

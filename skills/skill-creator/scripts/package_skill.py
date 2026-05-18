@@ -3,11 +3,11 @@
 Skill Packager - Creates a distributable .skill file of a skill folder
 
 Usage:
-    uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py <path/to/skill-folder> [output-directory]
+    uv run --project .devtools skills/skill-creator/scripts/package_skill.py <path/to/skill-folder> [output-directory]
 
 Example:
-    uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/my-skill
-    uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/my-skill skill-files/
+    uv run --project .devtools skills/skill-creator/scripts/package_skill.py skills/my-skill
+    uv run --project .devtools skills/skill-creator/scripts/package_skill.py skills/my-skill skill-files/
 """
 
 import sys
@@ -20,7 +20,7 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # Add shared library to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent.parent / ".devtools"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
 from agent_skills_lib.validation import validate_skill  # noqa: E402
 
 
@@ -92,10 +92,10 @@ def package_skill(skill_path, output_dir=None):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py <path/to/skill-folder> [output-directory]")
+        print("Usage: uv run --project .devtools skills/skill-creator/scripts/package_skill.py <path/to/skill-folder> [output-directory]")
         print("\nExample:")
-        print("  uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/my-skill")
-        print("  uv run --project .devtools .kilocode/skills/skill-creator/scripts/package_skill.py .kilocode/skills/my-skill skill-files/")
+        print("  uv run --project .devtools skills/skill-creator/scripts/package_skill.py skills/my-skill")
+        print("  uv run --project .devtools skills/skill-creator/scripts/package_skill.py skills/my-skill skill-files/")
         sys.exit(1)
 
     skill_path = sys.argv[1]
