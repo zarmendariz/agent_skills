@@ -1,0 +1,13 @@
+Plain Text Document
+===================
+
+This is a simple plain text file used for testing.
+
+Section 1
+---------
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+Section 2
+---------
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.

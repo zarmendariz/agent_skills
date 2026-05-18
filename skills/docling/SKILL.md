@@ -1,0 +1,163 @@
+---
+name: docling
+description: >
+  Document parsing and conversion skill using Docling. Invoke when the user needs to
+  extract text, tables, or structured content from PDF, DOCX, PPTX, XLSX, HTML, images,
+  LaTeX, AsciiDoc, CSV, or audio/video files. Triggers on: "parse document", "convert PDF",
+  "extract text from", "read this file", "import document", "docling", "OCR", or any
+  request to load non-code file content into context.
+---
+
+# Docling Document Parser
+
+Parse and convert documents into structured text for model context using Docling.
+
+## Capabilities
+
+- **Multi-format parsing**: PDF, DOCX, PPTX, XLSX, HTML, Markdown, AsciiDoc, LaTeX, CSV,
+  images (PNG/JPEG/TIFF/BMP/WEBP), audio (WAV/MP3/M4A), video (MP4/AVI/MOV), WebVTT
+- **Output formats**: Markdown (default), HTML, JSON, plain text, DocTags
+- **Advanced PDF features**: Layout analysis, table extraction, OCR, formula recognition,
+  code detection, image classification, chart data extraction
+- **Chunking**: Split large documents into token-aware chunks for RAG workflows
+- **Batch processing**: Convert entire directories of documents
+- **URL support**: Fetch and convert documents directly from URLs
+
+## Quick Reference
+
+### CLI Usage
+
+Convert a single file to Markdown:
+```bash
+uv run --project .devtools docling path/to/document.pdf
+```
+
+Convert with specific output format:
+```bash
+uv run --project .devtools docling --to json path/to/document.pdf
+uv run --project .devtools docling --to html path/to/document.pdf
+uv run --project .devtools docling --to text path/to/document.pdf
+```
+
+Convert from URL:
+```bash
+uv run --project .devtools docling https://example.com/paper.pdf
+```
+
+Specify input format explicitly:
+```bash
+uv run --project .devtools docling --from docx path/to/file.docx
+```
+
+Output to specific directory:
+```bash
+uv run --project .devtools docling --output ./converted/ path/to/document.pdf
+```
+
+### Python API Usage
+
+```python
+from docling.document_converter import DocumentConverter
+
+converter = DocumentConverter()
+result = converter.convert("path/to/document.pdf")
+markdown = result.document.export_to_markdown()
+```
+
+### Key CLI Options
+
+| Option | Description |
+|--------|-------------|
+| `--from` | Input format (pdf, docx, pptx, html, image, md, csv, xlsx, latex, etc.) |
+| `--to` | Output format (md, json, yaml, html, text, doctags, vtt) |
+| `--output` | Output directory (default: current directory) |
+| `--pipeline` | Processing pipeline: standard, vlm, asr |
+| `--ocr / --no-ocr` | Enable/disable OCR (default: enabled) |
+| `--force-ocr` | Replace existing text with OCR output |
+| `--tables / --no-tables` | Enable/disable table extraction (default: enabled) |
+| `--table-mode` | Table extraction quality: fast or accurate |
+| `--image-export-mode` | Image handling: placeholder, embedded, referenced |
+| `--vlm-model` | VLM model for advanced parsing (granite_docling, etc.) |
+| `--ocr-engine` | OCR backend: easyocr, tesseract, rapidocr, etc. |
+| `--num-threads` | CPU threads (default: 4) |
+| `--document-timeout` | Per-document timeout in seconds |
+
+## Script: convert_document.py
+
+Use `skills/docling/scripts/convert_document.py` for programmatic document conversion
+with additional features beyond the CLI:
+
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py <source> [options]
+```
+
+Options:
+- `--format` / `-f`: Output format (markdown, json, text, html, doctags). Default: markdown
+- `--output` / `-o`: Output file path (default: stdout)
+- `--chunk`: Enable chunking for large documents
+- `--chunk-size`: Max tokens per chunk (default: 512)
+- `--pages`: Max pages to process
+- `--no-ocr`: Disable OCR
+- `--no-tables`: Disable table extraction
+- `--table-mode`: Table mode (fast/accurate)
+- `--image-mode`: Image export (placeholder/embedded/referenced)
+- `--timeout`: Document processing timeout in seconds
+- `--force-ocr`: Replace text with OCR output
+
+## Workflow Patterns
+
+### 1. Parse a document into context
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py paper.pdf
+```
+
+### 2. Extract tables from a PDF
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py report.pdf -f markdown
+```
+
+### 3. Chunk a large document for RAG
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py book.pdf --chunk --chunk-size 1024
+```
+
+### 4. Convert a slide deck
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py presentation.pptx
+```
+
+### 5. Batch convert a directory
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py ./documents/ -o ./converted/
+```
+
+### 6. OCR a scanned image
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py scan.png --force-ocr
+```
+
+### 7. Export as structured JSON
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py report.pdf -f json -o report.json
+```
+
+## Advanced Features
+
+### Chunking for RAG
+The script supports HybridChunker for intelligent document splitting that respects
+document structure (headings, paragraphs, tables) while staying within token limits.
+
+### Pipeline Selection
+- **standard**: Default pipeline with layout analysis + OCR + table extraction
+- **vlm**: Visual Language Model pipeline for complex layouts (requires VLM model)
+- **asr**: Audio Speech Recognition pipeline for audio/video files
+
+### Error Handling
+- Graceful degradation: if OCR fails, falls back to text extraction
+- Timeout support: prevents hanging on corrupted files
+- Page limits: process only first N pages for quick previews
+
+## Format Reference
+
+See `skills/docling/references/format_reference.md` for complete format support matrix
+including per-format configuration options and known limitations.
