@@ -124,6 +124,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="standard",
         help="Processing pipeline (default: standard).",
     )
+    parser.add_argument(
+        "--tables-only",
+        action="store_true",
+        help="Extract and output only table content.",
+    )
     return parser
 
 
@@ -224,6 +229,9 @@ def convert_single(args: argparse.Namespace) -> str | list[dict]:
     if args.info:
         return document_info(doc)
 
+    if args.tables_only:
+        return extract_tables(doc, args.format)
+
     if args.chunk:
         return chunk_document(doc, max_tokens=args.chunk_size)
 
@@ -281,6 +289,45 @@ def document_info(doc: Any) -> str:
     ])
 
     return "\n".join(lines)
+
+
+def extract_tables(doc: Any, fmt: str = "markdown") -> str:
+    """Extract only table content from a document."""
+    d = doc.export_to_dict()
+    tables = d.get("tables", [])
+
+    if not tables:
+        return "No tables found in document."
+
+    if fmt == "json":
+        return json.dumps(tables, indent=2, ensure_ascii=False)
+
+    # For markdown/text, export each table as markdown
+    from docling_core.types.doc import DoclingDocument as DLDoc
+    parts = []
+    for i, table in enumerate(tables):
+        # Re-export the table using the document's built-in method
+        parts.append(f"### Table {i + 1}")
+        # Get table content from the document's markdown export
+        # by filtering to just table elements
+        if "data" in table and "grid" in table["data"]:
+            grid = table["data"]["grid"]
+            if grid:
+                # Build markdown table from grid
+                headers = [cell.get("text", "") for cell in grid[0]]
+                parts.append("| " + " | ".join(headers) + " |")
+                parts.append("| " + " | ".join(["---"] * len(headers)) + " |")
+                for row in grid[1:]:
+                    cells = [cell.get("text", "") for cell in row]
+                    parts.append("| " + " | ".join(cells) + " |")
+        parts.append("")
+
+    if len(parts) <= len(tables):
+        # Fallback: use full markdown export and extract table sections
+        md = doc.export_to_markdown()
+        return f"Found {len(tables)} table(s) in document.\n\n{md}"
+
+    return "\n".join(parts)
 
 
 def convert_directory(args: argparse.Namespace) -> dict[str, str]:

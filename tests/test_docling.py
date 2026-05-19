@@ -1153,6 +1153,54 @@ class TestImageModeHandling:
 
 
 # ---------------------------------------------------------------------------
+# Test: Tables-Only Extraction
+# ---------------------------------------------------------------------------
+
+
+class TestTablesOnly:
+    """Test the --tables-only extraction feature."""
+
+    def test_tables_only_csv(self, sample_csv):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_csv), "--tables-only"])
+        result = convert_single(args)
+        assert "Alice" in result
+        assert "Table 1" in result
+
+    def test_tables_only_docx(self, sample_docx):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_docx), "--tables-only"])
+        result = convert_single(args)
+        assert "Table" in result
+
+    def test_tables_only_no_tables(self, sample_txt):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_txt), "--tables-only"])
+        result = convert_single(args)
+        assert "No tables found" in result
+
+    def test_tables_only_json_format(self, sample_csv):
+        from convert_document import build_parser, convert_single
+        parser = build_parser()
+        args = parser.parse_args([str(sample_csv), "--tables-only", "-f", "json"])
+        result = convert_single(args)
+        parsed = json.loads(result)
+        assert isinstance(parsed, list)
+        assert len(parsed) > 0
+
+    def test_tables_only_subprocess(self, sample_csv):
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), str(sample_csv), "--tables-only"],
+            capture_output=True, text=True, timeout=120,
+        )
+        assert result.returncode == 0
+        assert "Alice" in result.stdout
+
+
+# ---------------------------------------------------------------------------
 # Test: JSON Export/Reimport Roundtrip
 # ---------------------------------------------------------------------------
 

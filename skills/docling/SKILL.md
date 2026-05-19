@@ -105,6 +105,7 @@ Options:
 - `--force-ocr`: Replace text with OCR output
 - `--info`: Print document structure summary (element counts, headings, word count)
 - `--pipeline`: Processing pipeline (standard/vlm)
+- `--tables-only`: Extract only table content from the document
 
 ## Workflow Patterns
 
@@ -148,6 +149,11 @@ uv run --project .devtools python skills/docling/scripts/convert_document.py rep
 uv run --project .devtools python skills/docling/scripts/convert_document.py report.pdf --info
 ```
 
+### 9. Extract only tables from a document
+```bash
+uv run --project .devtools python skills/docling/scripts/convert_document.py spreadsheet.xlsx --tables-only
+```
+
 ## Advanced Features
 
 ### Chunking for RAG
@@ -159,10 +165,32 @@ document structure (headings, paragraphs, tables) while staying within token lim
 - **vlm**: Visual Language Model pipeline for complex layouts (requires VLM model)
 - **asr**: Audio Speech Recognition pipeline for audio/video files
 
+### Table Extraction
+Use `--tables-only` to extract just tabular data from documents. Useful for
+spreadsheets, reports with embedded tables, or any document where you need
+structured data without surrounding prose.
+
 ### Error Handling
 - Graceful degradation: if OCR fails, falls back to text extraction
 - Timeout support: prevents hanging on corrupted files
 - Page limits: process only first N pages for quick previews
+
+## MCP Server Integration
+
+Docling provides an MCP server for agentic AI applications. Add to your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "docling": {
+      "command": "uvx",
+      "args": ["--from=docling-mcp", "docling-mcp-server"]
+    }
+  }
+}
+```
+
+This enables document processing capabilities directly through the Model Context Protocol.
 
 ## Format Reference
 
