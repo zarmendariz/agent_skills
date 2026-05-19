@@ -90,6 +90,25 @@ class TestPathResolution:
         with patch.dict(os.environ, {"KILOCODE_SKILLS_DIR": "/shared"}):
             assert pull.kilocode_skills_dir() == deploy.kilocode_skills_dir()
 
+    def test_copilot_devtools_dir_default(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("COPILOT_DEVTOOLS_DIR", None)
+            os.environ.pop("COPILOT_HOME", None)
+            assert deploy.copilot_devtools_dir() == Path.home() / ".copilot" / ".devtools"
+
+    def test_copilot_devtools_dir_override(self):
+        with patch.dict(os.environ, {"COPILOT_DEVTOOLS_DIR": "/custom/devtools"}):
+            assert deploy.copilot_devtools_dir() == Path("/custom/devtools")
+
+    def test_kilocode_devtools_dir_default(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("KILOCODE_DEVTOOLS_DIR", None)
+            assert deploy.kilocode_devtools_dir() == Path.home() / ".kilocode" / ".devtools"
+
+    def test_kilocode_devtools_dir_override(self):
+        with patch.dict(os.environ, {"KILOCODE_DEVTOOLS_DIR": "/custom/kilo/devtools"}):
+            assert deploy.kilocode_devtools_dir() == Path("/custom/kilo/devtools")
+
 
 class TestDeployFileOperations:
     """Test deploy.py file copy operations."""
@@ -246,12 +265,13 @@ class TestDeployEndToEnd:
     """End-to-end tests that deploy to temp directories and verify file structure."""
 
     def test_deploy_copilot_creates_skills_and_instructions(self, tmp_path, mock_repo_root):
-        """Verify deploy --copilot actually writes skills and instructions to correct paths."""
+        """Verify deploy --copilot actually writes skills, .devtools, and instructions to correct paths."""
         copilot_home = tmp_path / "copilot_home"
         copilot_home.mkdir()
 
         with patch.dict(os.environ, {
             "COPILOT_SKILLS_DIR": str(copilot_home / "skills"),
+            "COPILOT_DEVTOOLS_DIR": str(copilot_home / ".devtools"),
             "COPILOT_INSTRUCTIONS_PATH": str(copilot_home / "copilot-instructions.md"),
         }):
             ok = deploy.deploy_copilot(mock_repo_root, dry_run=False, force=True)
@@ -261,22 +281,30 @@ class TestDeployEndToEnd:
         assert (copilot_home / "skills" / "sample-skill" / "SKILL.md").exists()
         skill_content = (copilot_home / "skills" / "sample-skill" / "SKILL.md").read_text(encoding="utf-8")
         assert "sample-skill" in skill_content
+        # .devtools deployed
+        assert (copilot_home / ".devtools" / "pyproject.toml").exists()
+        assert (copilot_home / ".devtools" / "agent_skills_lib" / "__init__.py").exists()
         # Instructions deployed
         assert (copilot_home / "copilot-instructions.md").exists()
         assert "# Instructions" in (copilot_home / "copilot-instructions.md").read_text(encoding="utf-8")
 
     def test_deploy_kilocode_creates_skills_and_config(self, tmp_path, mock_repo_root):
-        """Verify deploy --kilocode actually writes skills and settings to correct paths."""
+        """Verify deploy --kilocode actually writes skills, .devtools, and settings to correct paths."""
         kilo_skills = tmp_path / "kilo_skills"
         kilo_skills.mkdir()
 
-        with patch.dict(os.environ, {"KILOCODE_SKILLS_DIR": str(kilo_skills)}):
+        with patch.dict(os.environ, {
+            "KILOCODE_SKILLS_DIR": str(kilo_skills),
+            "KILOCODE_DEVTOOLS_DIR": str(tmp_path / "kilo_devtools"),
+        }):
             with patch("deploy.kilocode_settings_dir", return_value=tmp_path / "settings"):
                 with patch("deploy.kilocode_opencode_path", return_value=tmp_path / "opencode.json"):
                     ok = deploy.deploy_kilocode(mock_repo_root, dry_run=False, force=True)
 
         assert ok is True
         assert (kilo_skills / "sample-skill" / "SKILL.md").exists()
+        assert (tmp_path / "kilo_devtools" / "pyproject.toml").exists()
+        assert (tmp_path / "kilo_devtools" / "agent_skills_lib" / "__init__.py").exists()
         assert (tmp_path / "settings" / "mcp_settings.json").exists()
         assert (tmp_path / "settings" / "custom_modes.yaml").exists()
         assert (tmp_path / "opencode.json").exists()
@@ -287,6 +315,7 @@ class TestDeployEndToEnd:
 
         with patch.dict(os.environ, {
             "COPILOT_SKILLS_DIR": str(copilot_home / "skills"),
+            "COPILOT_DEVTOOLS_DIR": str(copilot_home / ".devtools"),
             "COPILOT_INSTRUCTIONS_PATH": str(copilot_home / "copilot-instructions.md"),
         }):
             ok = deploy.deploy_copilot(mock_repo_root, dry_run=True, force=True)
@@ -297,9 +326,11 @@ class TestDeployEndToEnd:
     def test_deploy_copilot_cli_subprocess(self, tmp_path):
         """Test deploy.py via subprocess with env overrides — real end-to-end."""
         copilot_skills = tmp_path / "copilot_skills"
+        copilot_devtools = tmp_path / "copilot_devtools"
 
         env = os.environ.copy()
         env["COPILOT_SKILLS_DIR"] = str(copilot_skills)
+        env["COPILOT_DEVTOOLS_DIR"] = str(copilot_devtools)
         env["COPILOT_INSTRUCTIONS_PATH"] = str(tmp_path / "instructions.md")
 
         result = _run(
@@ -314,15 +345,22 @@ class TestDeployEndToEnd:
         assert (copilot_skills / "nushell" / "SKILL.md").exists()
         assert (copilot_skills / "skill-creator" / "SKILL.md").exists()
         assert (copilot_skills / "unit-testing" / "SKILL.md").exists()
+        # Verify .devtools deployed
+        assert (copilot_devtools / "pyproject.toml").exists()
+        assert (copilot_devtools / "agent_skills_lib" / "paths.py").exists()
+        # Verify .venv is excluded
+        assert not (copilot_devtools / ".venv").exists()
         # Verify instructions deployed
         assert (tmp_path / "instructions.md").exists()
 
     def test_deploy_kilocode_cli_subprocess(self, tmp_path):
         """Test deploy.py --kilocode via subprocess with env overrides."""
         kilo_skills = tmp_path / "kilo_skills"
+        kilo_devtools = tmp_path / "kilo_devtools"
 
         env = os.environ.copy()
         env["KILOCODE_SKILLS_DIR"] = str(kilo_skills)
+        env["KILOCODE_DEVTOOLS_DIR"] = str(kilo_devtools)
 
         result = _run(
             [UV, "run", "--project", ".devtools",
@@ -333,6 +371,9 @@ class TestDeployEndToEnd:
         assert result.returncode == 0, f"stdout: {result.stdout}\nstderr: {result.stderr}"
         assert (kilo_skills / "skill-sync" / "SKILL.md").exists()
         assert (kilo_skills / "nushell" / "SKILL.md").exists()
+        # Verify .devtools deployed
+        assert (kilo_devtools / "pyproject.toml").exists()
+        assert (kilo_devtools / "agent_skills_lib" / "paths.py").exists()
 
 
 class TestPullEndToEnd:
@@ -424,11 +465,13 @@ class TestDeployPullRoundTrip:
     def test_deploy_then_pull_preserves_skills(self, tmp_path, mock_repo_root):
         """Deploy skills to a temp dir, then pull them back — content should match."""
         copilot_skills = tmp_path / "copilot_skills"
+        copilot_devtools = tmp_path / "copilot_devtools"
         copilot_instructions = tmp_path / "instructions.md"
 
         # Deploy
         with patch.dict(os.environ, {
             "COPILOT_SKILLS_DIR": str(copilot_skills),
+            "COPILOT_DEVTOOLS_DIR": str(copilot_devtools),
             "COPILOT_INSTRUCTIONS_PATH": str(copilot_instructions),
         }):
             deploy.deploy_copilot(mock_repo_root, dry_run=False, force=True)
@@ -442,6 +485,7 @@ class TestDeployPullRoundTrip:
         # Pull
         with patch.dict(os.environ, {
             "COPILOT_SKILLS_DIR": str(copilot_skills),
+            "COPILOT_DEVTOOLS_DIR": str(copilot_devtools),
             "COPILOT_INSTRUCTIONS_PATH": str(copilot_instructions),
         }):
             pull.pull_copilot(fresh_root, dry_run=False, force=True)

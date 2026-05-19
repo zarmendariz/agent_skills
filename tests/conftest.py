@@ -47,6 +47,18 @@ def mock_repo_root(tmp_path):
         encoding="utf-8",
     )
 
+    # Create .devtools/ (shared Python tooling)
+    devtools_dir = root / ".devtools"
+    devtools_dir.mkdir()
+    (devtools_dir / "pyproject.toml").write_text(
+        '[project]\nname = "agent-skills-devtools"\nversion = "0.1.0"\n',
+        encoding="utf-8",
+    )
+    agent_lib = devtools_dir / "agent_skills_lib"
+    agent_lib.mkdir()
+    (agent_lib / "__init__.py").write_text('"""Shared library."""\n', encoding="utf-8")
+    (agent_lib / "paths.py").write_text("# paths\n", encoding="utf-8")
+
     # Create .kilocode/cli/global/settings/
     settings_dir = root / ".kilocode" / "cli" / "global" / "settings"
     settings_dir.mkdir(parents=True)

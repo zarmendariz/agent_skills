@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "Shared Python development tooling for agent skills"
 requires-python = ">=3.13"
 dependencies = [
-    "docling>=2.94.0",
     "pyyaml>=6.0",
 ]
 

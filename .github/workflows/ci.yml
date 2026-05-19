@@ -37,3 +37,5 @@ jobs:
           uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/nushell
           uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/skill-creator
           uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/unit-testing
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/docling
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/uv

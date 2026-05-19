@@ -68,6 +68,7 @@ uv run --project .devtools skills/skill-sync/scripts/pull.py --all --dry-run
 | Source (repo)                              | Destination (global)                   |
 |--------------------------------------------|----------------------------------------|
 | `skills/`                                  | `~/.kilocode/skills/`                  |
+| `.devtools/`                               | `~/.kilocode/.devtools/`               |
 | `.kilocode/cli/global/settings/mcp_settings.json` | `~/.kilocode/cli/global/settings/mcp_settings.json` |
 | `.kilocode/cli/global/settings/custom_modes.yaml` | `~/.kilocode/cli/global/settings/custom_modes.yaml` |
 | `opencode.json`                            | `~/.config/kilo/opencode.json`         |
@@ -77,6 +78,7 @@ uv run --project .devtools skills/skill-sync/scripts/pull.py --all --dry-run
 | Source (repo)                              | Destination (global)                   |
 |--------------------------------------------|----------------------------------------|
 | `skills/`                                  | `~/.copilot/skills/`                   |
+| `.devtools/`                               | `~/.copilot/.devtools/`                |
 | `.github/copilot-instructions.md`          | `~/.copilot/copilot-instructions.md`   |
 
 ## Global Config Paths
@@ -97,7 +99,9 @@ The scripts resolve paths automatically based on OS:
 
 Override paths via environment variables:
 - `KILOCODE_SKILLS_DIR` — KiloCode skills dir
+- `KILOCODE_DEVTOOLS_DIR` — KiloCode .devtools dir
 - `COPILOT_SKILLS_DIR` — Copilot skills dir
+- `COPILOT_DEVTOOLS_DIR` — Copilot .devtools dir
 - `COPILOT_HOME` — Copilot home dir (default: `~/.copilot`)
 - `COPILOT_INSTRUCTIONS_PATH` — Copilot instructions file
 

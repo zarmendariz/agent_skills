@@ -8,6 +8,10 @@ Tests cover:
 - Directory batch processing
 - Error handling and edge cases
 - Script integration (subprocess execution)
+
+Note: Tests that require the docling package are skipped when docling is not
+installed. Install docling as a uv tool (`uv tool install docling-slim`) to
+run the full suite.
 """
 
 from __future__ import annotations
@@ -32,6 +36,18 @@ SCRIPT_PATH = REPO_ROOT / "skills" / "docling" / "scripts" / "convert_document.p
 
 # Add the script directory to path for imports
 sys.path.insert(0, str(SCRIPT_PATH.parent))
+
+# Check if docling is available (installed as uv tool)
+_docling_available = True
+try:
+    import docling  # noqa: F401
+except ImportError:
+    _docling_available = False
+
+requires_docling = pytest.mark.skipif(
+    not _docling_available,
+    reason="docling not installed (install with: uv tool install docling-slim)",
+)
 
 
 # ---------------------------------------------------------------------------
@@ -97,6 +113,7 @@ def temp_output_dir(tmp_path):
 @pytest.fixture
 def converter():
     """Cached DocumentConverter instance for tests."""
+    pytest.importorskip("docling")
     from docling.document_converter import DocumentConverter
     return DocumentConverter()
 
@@ -189,6 +206,7 @@ class TestArgumentParser:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestMarkdownConversion:
     """Test converting Markdown documents."""
 
@@ -241,6 +259,7 @@ class TestMarkdownConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestHtmlConversion:
     """Test converting HTML documents."""
 
@@ -274,6 +293,7 @@ class TestHtmlConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestCsvConversion:
     """Test converting CSV documents."""
 
@@ -304,6 +324,7 @@ class TestCsvConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestDocxConversion:
     """Test converting DOCX documents."""
 
@@ -343,6 +364,7 @@ class TestDocxConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestPdfConversion:
     """Test converting PDF documents."""
 
@@ -373,6 +395,7 @@ class TestPdfConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestPlainTextConversion:
     """Test converting plain text documents."""
 
@@ -392,6 +415,7 @@ class TestPlainTextConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestPptxConversion:
     """Test converting PPTX documents."""
 
@@ -428,6 +452,7 @@ class TestPptxConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestDoclingJsonReimport:
     """Test reimporting previously exported Docling JSON documents."""
 
@@ -459,6 +484,7 @@ class TestDoclingJsonReimport:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestXlsxConversion:
     """Test converting XLSX spreadsheet documents."""
 
@@ -491,6 +517,7 @@ class TestXlsxConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestLatexConversion:
     """Test converting LaTeX documents."""
 
@@ -529,6 +556,7 @@ class TestLatexConversion:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestExportDocument:
     """Test the export_document helper function."""
 
@@ -578,6 +606,7 @@ class TestExportDocument:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestCreateConverter:
     """Test converter creation with various options."""
 
@@ -622,6 +651,7 @@ class TestCreateConverter:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestChunking:
     """Test document chunking functionality."""
 
@@ -670,6 +700,7 @@ class TestChunking:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestDirectoryProcessing:
     """Test batch directory conversion."""
 
@@ -758,6 +789,7 @@ class TestWriteOutput:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestConvertSingle:
     """Test single file conversion end-to-end."""
 
@@ -807,6 +839,7 @@ class TestConvertSingle:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestSubprocessExecution:
     """Test running the script as a subprocess."""
 
@@ -895,6 +928,7 @@ class TestSubprocessExecution:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestErrorHandling:
     """Test error handling and edge cases."""
 
@@ -935,6 +969,7 @@ class TestErrorHandling:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestDoclingDocumentProperties:
     """Test properties of the converted DoclingDocument."""
 
@@ -974,6 +1009,7 @@ class TestDoclingDocumentProperties:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestOutputConsistency:
     """Verify that different output formats contain equivalent content."""
 
@@ -1014,6 +1050,7 @@ class TestOutputConsistency:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestDocumentInfo:
     """Test the --info document introspection feature."""
 
@@ -1123,6 +1160,7 @@ class TestPipelineOptions:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestImageModeHandling:
     """Test image export mode enum mapping."""
 
@@ -1157,6 +1195,7 @@ class TestImageModeHandling:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestTablesOnly:
     """Test the --tables-only extraction feature."""
 
@@ -1205,6 +1244,7 @@ class TestTablesOnly:
 # ---------------------------------------------------------------------------
 
 
+@requires_docling
 class TestJsonRoundtrip:
     """Test that JSON export → reimport preserves document content."""
 

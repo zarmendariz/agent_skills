@@ -111,7 +111,9 @@ class TestPullDryRun:
 class TestAllSkillsValidate:
     """Validate all skills in the repo pass validation."""
 
-    @pytest.mark.parametrize("skill_name", ["skill-sync", "nushell", "skill-creator", "unit-testing"])
+    @pytest.mark.parametrize("skill_name", [
+        "skill-sync", "nushell", "skill-creator", "unit-testing", "docling", "uv",
+    ])
     def test_skill_validates(self, skill_name):
         result = _run([UV, "run", "--project", ".devtools",
              "skills/skill-creator/scripts/quick_validate.py",

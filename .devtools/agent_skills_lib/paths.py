@@ -31,6 +31,14 @@ def kilocode_skills_dir() -> Path:
     return Path.home() / ".kilocode" / "skills"
 
 
+def kilocode_devtools_dir() -> Path:
+    """Global KiloCode .devtools directory. Override: KILOCODE_DEVTOOLS_DIR."""
+    override = os.environ.get("KILOCODE_DEVTOOLS_DIR")
+    if override:
+        return Path(override).expanduser()
+    return Path.home() / ".kilocode" / ".devtools"
+
+
 def kilocode_settings_dir() -> Path:
     """Global KiloCode CLI settings directory."""
     return Path.home() / ".kilocode" / "cli" / "global" / "settings"
@@ -50,6 +58,14 @@ def copilot_home() -> Path:
     if override:
         return Path(override).expanduser()
     return Path.home() / ".copilot"
+
+
+def copilot_devtools_dir() -> Path:
+    """Global GitHub Copilot CLI .devtools directory. Override: COPILOT_DEVTOOLS_DIR."""
+    override = os.environ.get("COPILOT_DEVTOOLS_DIR")
+    if override:
+        return Path(override).expanduser()
+    return copilot_home() / ".devtools"
 
 
 def copilot_skills_dir() -> Path:

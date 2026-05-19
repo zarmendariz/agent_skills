@@ -12,6 +12,17 @@ description: >
 
 Parse and convert documents into structured text for model context using Docling.
 
+## Prerequisites
+
+Docling must be installed as a system-level uv tool:
+
+```bash
+uv tool install docling-slim
+```
+
+This provides the `docling` CLI command system-wide. Do NOT add docling as a project
+dependency — always invoke the installed tool directly.
+
 ## Capabilities
 
 - **Multi-format parsing**: PDF, DOCX, PPTX, XLSX, HTML, Markdown, AsciiDoc, LaTeX, CSV,
@@ -29,29 +40,29 @@ Parse and convert documents into structured text for model context using Docling
 
 Convert a single file to Markdown:
 ```bash
-uv run --project .devtools docling path/to/document.pdf
+docling path/to/document.pdf
 ```
 
 Convert with specific output format:
 ```bash
-uv run --project .devtools docling --to json path/to/document.pdf
-uv run --project .devtools docling --to html path/to/document.pdf
-uv run --project .devtools docling --to text path/to/document.pdf
+docling --to json path/to/document.pdf
+docling --to html path/to/document.pdf
+docling --to text path/to/document.pdf
 ```
 
 Convert from URL:
 ```bash
-uv run --project .devtools docling https://example.com/paper.pdf
+docling https://example.com/paper.pdf
 ```
 
 Specify input format explicitly:
 ```bash
-uv run --project .devtools docling --from docx path/to/file.docx
+docling --from docx path/to/file.docx
 ```
 
 Output to specific directory:
 ```bash
-uv run --project .devtools docling --output ./converted/ path/to/document.pdf
+docling --output ./converted/ path/to/document.pdf
 ```
 
 ### Python API Usage
@@ -85,10 +96,11 @@ markdown = result.document.export_to_markdown()
 ## Script: convert_document.py
 
 Use `skills/docling/scripts/convert_document.py` for programmatic document conversion
-with additional features beyond the CLI:
+with additional features beyond the CLI. This script uses PEP 723 inline metadata and
+runs standalone via `uv run` (no project context needed):
 
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py <source> [options]
+uv run skills/docling/scripts/convert_document.py <source> [options]
 ```
 
 Options:
@@ -111,47 +123,47 @@ Options:
 
 ### 1. Parse a document into context
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py paper.pdf
+uv run skills/docling/scripts/convert_document.py paper.pdf
 ```
 
 ### 2. Extract tables from a PDF
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py report.pdf -f markdown
+uv run skills/docling/scripts/convert_document.py report.pdf -f markdown
 ```
 
 ### 3. Chunk a large document for RAG
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py book.pdf --chunk --chunk-size 1024
+uv run skills/docling/scripts/convert_document.py book.pdf --chunk --chunk-size 1024
 ```
 
 ### 4. Convert a slide deck
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py presentation.pptx
+docling presentation.pptx
 ```
 
 ### 5. Batch convert a directory
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py ./documents/ -o ./converted/
+uv run skills/docling/scripts/convert_document.py ./documents/ -o ./converted/
 ```
 
 ### 6. OCR a scanned image
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py scan.png --force-ocr
+docling --force-ocr scan.png
 ```
 
 ### 7. Export as structured JSON
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py report.pdf -f json -o report.json
+docling --to json path/to/report.pdf --output ./
 ```
 
 ### 8. Inspect document structure
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py report.pdf --info
+uv run skills/docling/scripts/convert_document.py report.pdf --info
 ```
 
 ### 9. Extract only tables from a document
 ```bash
-uv run --project .devtools python skills/docling/scripts/convert_document.py spreadsheet.xlsx --tables-only
+uv run skills/docling/scripts/convert_document.py spreadsheet.xlsx --tables-only
 ```
 
 ## Advanced Features

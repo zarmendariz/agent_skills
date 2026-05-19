@@ -1,30 +1,36 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#   "docling>=2.94.0",
+# ]
+# ///
 """Convert documents to structured text using Docling.
 
 Supports PDF, DOCX, PPTX, XLSX, HTML, Markdown, LaTeX, CSV, images, and more.
 Outputs Markdown (default), JSON, HTML, plain text, or DocTags.
 
 Usage:
-    uv run --project .devtools python skills/docling/scripts/convert_document.py <source> [options]
+    uv run skills/docling/scripts/convert_document.py <source> [options]
 
 Examples:
     # Convert PDF to markdown (stdout)
-    python convert_document.py report.pdf
+    uv run convert_document.py report.pdf
 
     # Convert to JSON and save to file
-    python convert_document.py report.pdf -f json -o report.json
+    uv run convert_document.py report.pdf -f json -o report.json
 
     # Chunk a large document for RAG
-    python convert_document.py book.pdf --chunk --chunk-size 1024
+    uv run convert_document.py book.pdf --chunk --chunk-size 1024
 
     # Batch convert a directory
-    python convert_document.py ./documents/ -o ./converted/
+    uv run convert_document.py ./documents/ -o ./converted/
 
     # OCR a scanned document
-    python convert_document.py scan.pdf --force-ocr
+    uv run convert_document.py scan.pdf --force-ocr
 
     # Get document structure info
-    python convert_document.py report.pdf --info
+    uv run convert_document.py report.pdf --info
 """
 
 from __future__ import annotations

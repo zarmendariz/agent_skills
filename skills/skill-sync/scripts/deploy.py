@@ -46,6 +46,10 @@ def kilocode_skills_dir() -> Path:
     return _paths.kilocode_skills_dir()
 
 
+def kilocode_devtools_dir() -> Path:
+    return _paths.kilocode_devtools_dir()
+
+
 def kilocode_settings_dir() -> Path:
     return _paths.kilocode_settings_dir()
 
@@ -56,6 +60,10 @@ def kilocode_opencode_path() -> Path:
 
 def copilot_skills_dir() -> Path:
     return _paths.copilot_skills_dir()
+
+
+def copilot_devtools_dir() -> Path:
+    return _paths.copilot_devtools_dir()
 
 
 def copilot_instructions_path() -> Path:
@@ -136,6 +144,37 @@ def copy_skills(src_skills_dir: Path, dst_skills_dir: Path, dry_run: bool, force
     return all_ok
 
 
+DEVTOOLS_EXCLUDE = {".venv", "__pycache__", ".pytest_cache"}
+
+
+def copy_devtools(src_devtools: Path, dst_devtools: Path, dry_run: bool) -> bool:
+    """Copy .devtools project (excluding .venv and caches). Returns success."""
+    if not src_devtools.exists():
+        print(f"  .devtools source not found: {src_devtools}")
+        return False
+
+    print(f"  .devtools")
+    print(f"    {src_devtools}")
+    print(f"    → {dst_devtools}")
+    if dry_run:
+        print("    [dry-run] skipped")
+        return True
+    try:
+        dst_devtools.parent.mkdir(parents=True, exist_ok=True)
+        if dst_devtools.exists():
+            shutil.rmtree(dst_devtools)
+        shutil.copytree(
+            src_devtools,
+            dst_devtools,
+            ignore=shutil.ignore_patterns(*DEVTOOLS_EXCLUDE),
+        )
+        print("    OK")
+        return True
+    except Exception as e:
+        print(f"    FAILED: {e}")
+        return False
+
+
 # ── Deploy targets ─────────────────────────────────────────────────────────────
 
 def deploy_kilocode(root: Path, dry_run: bool, force: bool) -> bool:
@@ -145,6 +184,9 @@ def deploy_kilocode(root: Path, dry_run: bool, force: bool) -> bool:
     # Skills
     src_skills = root / "skills"
     all_ok &= copy_skills(src_skills, kilocode_skills_dir(), dry_run, force)
+
+    # .devtools (shared Python tooling)
+    all_ok &= copy_devtools(root / ".devtools", kilocode_devtools_dir(), dry_run)
 
     # MCP settings
     all_ok &= copy_file(
@@ -177,6 +219,9 @@ def deploy_copilot(root: Path, dry_run: bool, force: bool) -> bool:
     # Skills (same source, different destination)
     src_skills = root / "skills"
     all_ok &= copy_skills(src_skills, copilot_skills_dir(), dry_run, force)
+
+    # .devtools (shared Python tooling)
+    all_ok &= copy_devtools(root / ".devtools", copilot_devtools_dir(), dry_run)
 
     # copilot-instructions.md
     all_ok &= copy_file(

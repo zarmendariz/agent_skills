@@ -1,7 +1,6 @@
 ---
 name: skill-creator
 description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
-license: Complete terms in LICENSE.txt
 ---
 
 # Skill Creator
@@ -261,15 +260,21 @@ Skip this step only if the skill being developed already exists, and iteration o
 
 When creating a new skill from scratch, always run the `init_skill.py` script. The script conveniently generates a new template skill directory that automatically includes everything a skill requires, making the skill creation process much more efficient and reliable.
 
-Usage:
+Usage (from repo root):
 
-```nu
+```bash
 uv run --project .devtools skills/skill-creator/scripts/init_skill.py <skill-name>
+```
+
+Usage (global context — outside the repo):
+
+```bash
+uv run --project ~/.copilot/.devtools skills/skill-creator/scripts/init_skill.py <skill-name>
 ```
 
 Optional custom path:
 
-```nu
+```bash
 uv run --project .devtools skills/skill-creator/scripts/init_skill.py <skill-name> --path <output-directory>
 ```
 
@@ -327,13 +332,19 @@ Write instructions for using the skill and its bundled resources.
 
 Once development of the skill is complete, it must be packaged into a distributable .skill file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
 
-```nu
+```bash
 uv run --project .devtools skills/skill-creator/scripts/package_skill.py skills/<skill-name>
+```
+
+Global context (outside repo):
+
+```bash
+uv run --project ~/.copilot/.devtools skills/skill-creator/scripts/package_skill.py skills/<skill-name>
 ```
 
 Optional output directory specification (defaults to `skill-files/`):
 
-```nu
+```bash
 uv run --project .devtools skills/skill-creator/scripts/package_skill.py skills/<skill-name> skill-files/
 ```
 

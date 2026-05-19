@@ -24,6 +24,25 @@ uv run --project .devtools skills/skill-creator/scripts/package_skill.py skills/
 uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/<skill-name>
 ```
 
+**Global context (outside repo):** When skills are deployed globally, `.devtools` lives at
+`~/.copilot/.devtools/` (Copilot CLI) or `~/.kilocode/.devtools/` (KiloCode CLI). Use the
+absolute path:
+
+```bash
+uv run --project ~/.copilot/.devtools skills/skill-creator/scripts/init_skill.py <skill-name>
+```
+
+### uv Tool Preference
+
+Tools installed system-wide via `uv tool install` must always be invoked directly rather than
+added as project dependencies. Check available tools with `uv tool list`. For example, if
+`docling` is installed as a tool, invoke it as `docling <args>` — never via
+`uv run --project .devtools docling`.
+
+**Rule:** If a CLI executable is available from `uv tool list`, use it directly. Only use
+`uv run --project .devtools` for scripts that depend on `agent_skills_lib` (validation,
+packaging, deployment scripts).
+
 ### Deployment (KiloCode CLI + GitHub Copilot CLI)
 
 Cross-platform Python scripts handle deploying to and pulling from both tool environments:
@@ -43,12 +62,12 @@ uv run --project .devtools skills/skill-sync/scripts/pull.py --all --dry-run
 
 **Global install paths (auto-detected by scripts):**
 
-| Tool | Skills path | Instructions |
-|------|-------------|--------------|
-| KiloCode CLI | `~/.kilocode/skills/` | N/A |
-| GitHub Copilot CLI | `~/.copilot/skills/` | `~/.copilot/copilot-instructions.md` |
+| Tool | Skills path | .devtools path | Instructions |
+|------|-------------|----------------|--------------|
+| KiloCode CLI | `~/.kilocode/skills/` | `~/.kilocode/.devtools/` | N/A |
+| GitHub Copilot CLI | `~/.copilot/skills/` | `~/.copilot/.devtools/` | `~/.copilot/copilot-instructions.md` |
 
-Override via env vars: `KILOCODE_SKILLS_DIR`, `COPILOT_SKILLS_DIR`, `COPILOT_HOME`, `COPILOT_INSTRUCTIONS_PATH`.
+Override via env vars: `KILOCODE_SKILLS_DIR`, `KILOCODE_DEVTOOLS_DIR`, `COPILOT_SKILLS_DIR`, `COPILOT_DEVTOOLS_DIR`, `COPILOT_HOME`, `COPILOT_INSTRUCTIONS_PATH`.
 
 ### Legacy Nushell scripts (KiloCode CLI only)
 
@@ -72,6 +91,8 @@ skills/                    # All skills live here (source of truth for both CLI 
   nushell/                 # Nushell language skill
   skill-creator/           # Skill authoring workflow
   unit-testing/            # Embedded C unit testing skill
+  docling/                 # Document parsing (uses docling uv tool)
+  uv/                      # Python project management with uv
 .kilocode/
   cli/global/settings/     # KiloCode CLI settings (mcp_settings.json, custom_modes.yaml)
 .devtools/                 # Python tooling (pyproject.toml, uv.lock) — Python 3.13+
@@ -84,7 +105,7 @@ scripts/                   # Nushell repo-management utilities (KiloCode only)
 opencode.json              # KiloCode/OpenCode config (synced from ~/.config/kilo/)
 ```
 
-**Skills are the primary artifact.** The same skills are deployed to both KiloCode CLI (`~/.kilocode/skills/`) and GitHub Copilot CLI (`~/.copilot/skills/`) via `deploy.py`. The `skills/` directory is the canonical source.
+**Skills are the primary artifact.** The same skills are deployed to both KiloCode CLI (`~/.kilocode/skills/`) and GitHub Copilot CLI (`~/.copilot/skills/`) via `deploy.py`. The `skills/` directory is the canonical source. The `.devtools/` project is deployed alongside to provide the shared `agent_skills_lib` used by skill scripts.
 
 ## Skill Conventions
 
@@ -118,7 +139,7 @@ Skill directories use **hyphen-case**, lowercase, max 40 characters (e.g., `skil
 
 ### Bundled resources
 
-- **`scripts/`** — Deterministic code; run with `uv run` for Python scripts. Always test scripts before packaging.
+- **`scripts/`** — Deterministic code. Scripts that need `agent_skills_lib` use `uv run --project <devtools-path>`. Self-contained scripts use PEP 723 inline metadata and run with `uv run <script>`. Always test scripts before packaging.
 - **`references/`** — Lazy-loaded docs. For files >100 lines, include a table of contents so Claude can assess scope before reading.
 - **`assets/`** — Files used in output (templates, images, boilerplate), never loaded into context.
 
