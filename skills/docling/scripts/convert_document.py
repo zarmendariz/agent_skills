@@ -293,8 +293,9 @@ def convert_directory(args: argparse.Namespace) -> dict[str, str]:
 
     supported_extensions = {
         ".pdf", ".docx", ".pptx", ".xlsx", ".html", ".htm",
-        ".md", ".csv", ".tex", ".png", ".jpg", ".jpeg",
-        ".tiff", ".bmp", ".webp", ".adoc", ".txt",
+        ".md", ".csv", ".tex", ".latex", ".png", ".jpg", ".jpeg",
+        ".tiff", ".bmp", ".webp", ".adoc", ".txt", ".text",
+        ".vtt", ".json",
     }
 
     results = {}

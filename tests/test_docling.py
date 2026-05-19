@@ -75,6 +75,21 @@ def sample_docling_json():
 
 
 @pytest.fixture
+def sample_pptx():
+    return FIXTURES_DIR / "sample.pptx"
+
+
+@pytest.fixture
+def sample_xlsx():
+    return FIXTURES_DIR / "sample.xlsx"
+
+
+@pytest.fixture
+def sample_tex():
+    return FIXTURES_DIR / "sample.tex"
+
+
+@pytest.fixture
 def temp_output_dir(tmp_path):
     return tmp_path / "output"
 
@@ -370,6 +385,143 @@ class TestPlainTextConversion:
         result = converter.convert(str(sample_txt))
         text = result.document.export_to_text()
         assert "Lorem ipsum" in text
+
+
+# ---------------------------------------------------------------------------
+# Test: PPTX Conversion
+# ---------------------------------------------------------------------------
+
+
+class TestPptxConversion:
+    """Test converting PPTX documents."""
+
+    def test_convert_pptx_to_markdown(self, converter, sample_pptx):
+        result = converter.convert(str(sample_pptx))
+        md = result.document.export_to_markdown()
+        assert "Test Presentation" in md
+
+    def test_convert_pptx_preserves_slide_titles(self, converter, sample_pptx):
+        result = converter.convert(str(sample_pptx))
+        md = result.document.export_to_markdown()
+        assert "Key Points" in md
+
+    def test_convert_pptx_preserves_bullet_points(self, converter, sample_pptx):
+        result = converter.convert(str(sample_pptx))
+        md = result.document.export_to_markdown()
+        assert "First point" in md
+        assert "Second point" in md
+
+    def test_convert_pptx_to_text(self, converter, sample_pptx):
+        result = converter.convert(str(sample_pptx))
+        text = result.document.export_to_text()
+        assert "Test Presentation" in text
+
+    def test_convert_pptx_to_json(self, converter, sample_pptx):
+        result = converter.convert(str(sample_pptx))
+        d = result.document.export_to_dict()
+        assert isinstance(d, dict)
+        assert d.get("schema_name") == "DoclingDocument"
+
+
+# ---------------------------------------------------------------------------
+# Test: Docling JSON Reimport
+# ---------------------------------------------------------------------------
+
+
+class TestDoclingJsonReimport:
+    """Test reimporting previously exported Docling JSON documents."""
+
+    def test_reimport_docling_json(self, converter, sample_docling_json):
+        result = converter.convert(str(sample_docling_json))
+        md = result.document.export_to_markdown()
+        assert "Test PDF-like Document" in md
+
+    def test_reimport_preserves_headings(self, converter, sample_docling_json):
+        result = converter.convert(str(sample_docling_json))
+        md = result.document.export_to_markdown()
+        assert "Introduction" in md
+        assert "Data Section" in md
+
+    def test_reimport_preserves_content(self, converter, sample_docling_json):
+        result = converter.convert(str(sample_docling_json))
+        md = result.document.export_to_markdown()
+        assert "JSON roundtrip" in md
+
+    def test_reimport_to_json_roundtrip(self, converter, sample_docling_json):
+        result = converter.convert(str(sample_docling_json))
+        d = result.document.export_to_dict()
+        assert d["schema_name"] == "DoclingDocument"
+        assert len(d.get("texts", [])) > 0
+
+
+# ---------------------------------------------------------------------------
+# Test: XLSX Conversion
+# ---------------------------------------------------------------------------
+
+
+class TestXlsxConversion:
+    """Test converting XLSX spreadsheet documents."""
+
+    def test_convert_xlsx_to_markdown(self, converter, sample_xlsx):
+        result = converter.convert(str(sample_xlsx))
+        md = result.document.export_to_markdown()
+        assert "Widget A" in md
+
+    def test_convert_xlsx_preserves_headers(self, converter, sample_xlsx):
+        result = converter.convert(str(sample_xlsx))
+        md = result.document.export_to_markdown()
+        assert "Product" in md
+        assert "Q1" in md
+
+    def test_convert_xlsx_preserves_data(self, converter, sample_xlsx):
+        result = converter.convert(str(sample_xlsx))
+        md = result.document.export_to_markdown()
+        assert "100" in md
+        assert "Widget C" in md
+
+    def test_convert_xlsx_to_json(self, converter, sample_xlsx):
+        result = converter.convert(str(sample_xlsx))
+        d = result.document.export_to_dict()
+        assert isinstance(d, dict)
+        assert len(d.get("tables", [])) > 0
+
+
+# ---------------------------------------------------------------------------
+# Test: LaTeX Conversion
+# ---------------------------------------------------------------------------
+
+
+class TestLatexConversion:
+    """Test converting LaTeX documents."""
+
+    def test_convert_latex_to_markdown(self, converter, sample_tex):
+        result = converter.convert(str(sample_tex))
+        md = result.document.export_to_markdown()
+        assert "Test LaTeX Document" in md
+
+    def test_convert_latex_preserves_sections(self, converter, sample_tex):
+        result = converter.convert(str(sample_tex))
+        md = result.document.export_to_markdown()
+        assert "Introduction" in md
+        assert "Methods" in md
+        assert "Conclusion" in md
+
+    def test_convert_latex_preserves_equation(self, converter, sample_tex):
+        result = converter.convert(str(sample_tex))
+        md = result.document.export_to_markdown()
+        assert "mc^2" in md or "mc" in md
+
+    def test_convert_latex_preserves_table(self, converter, sample_tex):
+        result = converter.convert(str(sample_tex))
+        md = result.document.export_to_markdown()
+        assert "1.23" in md
+        assert "4.56" in md
+
+    def test_convert_latex_to_text(self, converter, sample_tex):
+        result = converter.convert(str(sample_tex))
+        text = result.document.export_to_text()
+        assert "Introduction" in text
+        assert "Docling parsing" in text
 
 
 # ---------------------------------------------------------------------------
@@ -998,3 +1150,58 @@ class TestImageModeHandling:
         # Invalid mode should fall back to placeholder without error
         output = export_document(result.document, "markdown", image_mode="invalid")
         assert isinstance(output, str)
+
+
+# ---------------------------------------------------------------------------
+# Test: JSON Export/Reimport Roundtrip
+# ---------------------------------------------------------------------------
+
+
+class TestJsonRoundtrip:
+    """Test that JSON export → reimport preserves document content."""
+
+    def test_docx_json_roundtrip(self, converter, sample_docx, tmp_path):
+        """Export DOCX to JSON, reimport, verify content preserved."""
+        # Convert original
+        result = converter.convert(str(sample_docx))
+        original_md = result.document.export_to_markdown()
+
+        # Export to JSON
+        json_file = tmp_path / "exported.json"
+        d = result.document.export_to_dict()
+        json_file.write_text(json.dumps(d, indent=2), encoding="utf-8")
+
+        # Reimport
+        result2 = converter.convert(str(json_file))
+        reimported_md = result2.document.export_to_markdown()
+
+        # Key content preserved
+        assert "Test DOCX Document" in reimported_md
+        assert "Section One" in reimported_md
+
+    def test_html_json_roundtrip(self, converter, sample_html, tmp_path):
+        """Export HTML to JSON, reimport, verify content preserved."""
+        result = converter.convert(str(sample_html))
+
+        json_file = tmp_path / "exported.json"
+        d = result.document.export_to_dict()
+        json_file.write_text(json.dumps(d, indent=2), encoding="utf-8")
+
+        result2 = converter.convert(str(json_file))
+        reimported_md = result2.document.export_to_markdown()
+
+        assert "HTML Test Document" in reimported_md
+
+    def test_roundtrip_preserves_table_data(self, converter, sample_csv, tmp_path):
+        """Tables survive the JSON roundtrip."""
+        result = converter.convert(str(sample_csv))
+
+        json_file = tmp_path / "exported.json"
+        d = result.document.export_to_dict()
+        json_file.write_text(json.dumps(d, indent=2), encoding="utf-8")
+
+        result2 = converter.convert(str(json_file))
+        reimported_md = result2.document.export_to_markdown()
+
+        assert "Alice" in reimported_md
+        assert "New York" in reimported_md
