@@ -2,6 +2,8 @@
 
 This repository manages AI agent **skills** for both [GitHub Copilot CLI](https://docs.github.com/copilot/concepts/agents/about-copilot-cli) and [KiloCode CLI](https://kilo.ai), following the Anthropic Agent Skill specification. Skills are modular packages that extend Claude's capabilities with specialized knowledge, workflows, and tools.
 
+Requires **Python 3.13+** and [uv](https://docs.astral.sh/uv/).
+
 ## Key Commands
 
 All Python tooling runs via `uv` with the `.devtools` project:
@@ -12,6 +14,12 @@ uv run --project .devtools pytest
 
 # Run tests with coverage
 uv run --project .devtools pytest --cov
+
+# Run a single test file
+uv run --project .devtools pytest tests/test_validate_skill.py
+
+# Run a single test by name pattern
+uv run --project .devtools pytest -k "test_valid_skill_passes"
 
 # Initialize a new skill (creates directory + template files)
 uv run --project .devtools skills/skill-creator/scripts/init_skill.py <skill-name>
@@ -87,11 +95,12 @@ Prefer the Python deploy scripts above for cross-platform and cross-tool support
 
 ```
 skills/                    # All skills live here (source of truth for both CLI tools)
-  skill-sync/              # Deploy/pull skill — manages global installs
+  ast-grep/                # Structural code search/transform via AST pattern matching
+  docling/                 # Document parsing (uses docling uv tool)
   nushell/                 # Nushell language skill
   skill-creator/           # Skill authoring workflow
+  skill-sync/              # Deploy/pull skill — manages global installs
   unit-testing/            # Embedded C unit testing skill
-  docling/                 # Document parsing (uses docling uv tool)
   uv/                      # Python project management with uv
 .kilocode/
   cli/global/settings/     # KiloCode CLI settings (mcp_settings.json, custom_modes.yaml)
@@ -107,11 +116,18 @@ opencode.json              # KiloCode/OpenCode config (synced from ~/.config/kil
 
 **Skills are the primary artifact.** The same skills are deployed to both KiloCode CLI (`~/.kilocode/skills/`) and GitHub Copilot CLI (`~/.copilot/skills/`) via `deploy.py`. The `skills/` directory is the canonical source. The `.devtools/` project is deployed alongside to provide the shared `agent_skills_lib` used by skill scripts.
 
+## Testing Notes
+
+- CI runs on both **Ubuntu** and **Windows** with Python 3.13
+- CI validates all skills via `quick_validate.py` after tests pass — new skills must be explicitly added to `.github/workflows/ci.yml`
+- `pytest.ini` adds skill script directories to `pythonpath`, so tests can directly import skill scripts (e.g., `from deploy import ...`)
+- Test fixtures use `tmp_path` and `conftest.py` provides `valid_skill_dir` and `mock_repo_root` helpers
+
 ## Skill Conventions
 
 ### SKILL.md structure
 
-Every `SKILL.md` requires YAML frontmatter with exactly **two fields** (`name` and `description` — no others):
+Every `SKILL.md` requires YAML frontmatter. Required fields: `name` and `description`. Optional: `license`, `allowed-tools`, `metadata`. No other keys are allowed.
 
 ```yaml
 ---
@@ -135,7 +151,7 @@ Keep `SKILL.md` lean. Move detailed reference material and schemas to `reference
 
 ### Skill naming
 
-Skill directories use **hyphen-case**, lowercase, max 40 characters (e.g., `skill-creator`, `unit-testing`).
+Skill directories use **hyphen-case**, lowercase, max 64 characters (e.g., `skill-creator`, `unit-testing`). Name cannot start/end with a hyphen or contain consecutive hyphens. Description cannot contain angle brackets and is limited to 1024 characters.
 
 ### Bundled resources
 
