@@ -19,9 +19,12 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-# Add shared library to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
-from agent_skills_lib.validation import validate_skill  # noqa: E402
+# Import shared library (available via uv run --project .devtools; fallback for direct execution)
+try:
+    from agent_skills_lib.validation import validate_skill
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
+    from agent_skills_lib.validation import validate_skill  # noqa: E402
 
 
 def package_skill(skill_path, output_dir=None):

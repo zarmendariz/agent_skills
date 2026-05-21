@@ -51,15 +51,16 @@ added as project dependencies. Check available tools with `uv tool list`. For ex
 `uv run --project .devtools` for scripts that depend on `agent_skills_lib` (validation,
 packaging, deployment scripts).
 
-### Deployment (KiloCode CLI + GitHub Copilot CLI)
+### Deployment (Kilo CLI + GitHub Copilot CLI + Cross-Client)
 
-Cross-platform Python scripts handle deploying to and pulling from both tool environments:
+Cross-platform Python scripts handle deploying to and pulling from all tool environments:
 
 ```bash
-# Deploy skills + config to both tools (Linux and Windows)
+# Deploy skills + config to all tools
 uv run --project .devtools skills/skill-sync/scripts/deploy.py --all
-uv run --project .devtools skills/skill-sync/scripts/deploy.py --kilocode   # KiloCode only
+uv run --project .devtools skills/skill-sync/scripts/deploy.py --kilocode   # Kilo CLI only
 uv run --project .devtools skills/skill-sync/scripts/deploy.py --copilot    # Copilot only
+uv run --project .devtools skills/skill-sync/scripts/deploy.py --agents     # ~/.agents/ only
 uv run --project .devtools skills/skill-sync/scripts/deploy.py --all --dry-run
 uv run --project .devtools skills/skill-sync/scripts/deploy.py --all --force
 
@@ -72,10 +73,12 @@ uv run --project .devtools skills/skill-sync/scripts/pull.py --all --dry-run
 
 | Tool | Skills path | .devtools path | Instructions |
 |------|-------------|----------------|--------------|
-| KiloCode CLI | `~/.kilocode/skills/` | `~/.kilocode/.devtools/` | N/A |
+| Kilo CLI | `~/.kilo/skills/` | `~/.kilo/.devtools/` | N/A |
+| Kilo CLI (legacy) | `~/.kilocode/skills/` | — | N/A |
 | GitHub Copilot CLI | `~/.copilot/skills/` | `~/.copilot/.devtools/` | `~/.copilot/copilot-instructions.md` |
+| Cross-Client | `~/.agents/skills/` | — | — |
 
-Override via env vars: `KILOCODE_SKILLS_DIR`, `KILOCODE_DEVTOOLS_DIR`, `COPILOT_SKILLS_DIR`, `COPILOT_DEVTOOLS_DIR`, `COPILOT_HOME`, `COPILOT_INSTRUCTIONS_PATH`.
+Override via env vars: `KILOCODE_SKILLS_DIR`, `KILOCODE_DEVTOOLS_DIR`, `COPILOT_SKILLS_DIR`, `COPILOT_DEVTOOLS_DIR`, `COPILOT_HOME`, `COPILOT_INSTRUCTIONS_PATH`, `AGENTS_SKILLS_DIR`.
 
 ### Legacy Nushell scripts (KiloCode CLI only)
 
@@ -94,12 +97,13 @@ Prefer the Python deploy scripts above for cross-platform and cross-tool support
 ## Architecture
 
 ```
-skills/                    # All skills live here (source of truth for both CLI tools)
+skills/                    # All skills live here (source of truth for all CLI tools)
   ast-grep/                # Structural code search/transform via AST pattern matching
   docling/                 # Document parsing (uses docling uv tool)
   nushell/                 # Nushell language skill
   skill-creator/           # Skill authoring workflow
   skill-sync/              # Deploy/pull skill — manages global installs
+  tools/                   # System tool registry
   unit-testing/            # Embedded C unit testing skill
   uv/                      # Python project management with uv
 .kilocode/
@@ -114,11 +118,11 @@ scripts/                   # Nushell repo-management utilities (KiloCode only)
 opencode.json              # KiloCode/OpenCode config (synced from ~/.config/kilo/)
 ```
 
-**Skills are the primary artifact.** The same skills are deployed to both KiloCode CLI (`~/.kilocode/skills/`) and GitHub Copilot CLI (`~/.copilot/skills/`) via `deploy.py`. The `skills/` directory is the canonical source. The `.devtools/` project is deployed alongside to provide the shared `agent_skills_lib` used by skill scripts.
+**Skills are the primary artifact.** The same skills are deployed to Kilo CLI (`~/.kilo/skills/`), GitHub Copilot CLI (`~/.copilot/skills/`), and the cross-client path (`~/.agents/skills/`) via `deploy.py`. The `skills/` directory is the canonical source. The `.devtools/` project is deployed alongside to provide the shared `agent_skills_lib` used by skill scripts.
 
 ## Testing Notes
 
-- CI runs on both **Ubuntu** and **Windows** with Python 3.13
+- CI runs on **Ubuntu**, **Windows**, and **macOS** with Python 3.13
 - CI validates all skills via `quick_validate.py` after tests pass — new skills must be explicitly added to `.github/workflows/ci.yml`
 - `pytest.ini` adds skill script directories to `pythonpath`, so tests can directly import skill scripts (e.g., `from deploy import ...`)
 - Test fixtures use `tmp_path` and `conftest.py` provides `valid_skill_dir` and `mock_repo_root` helpers
@@ -127,7 +131,7 @@ opencode.json              # KiloCode/OpenCode config (synced from ~/.config/kil
 
 ### SKILL.md structure
 
-Every `SKILL.md` requires YAML frontmatter. Required fields: `name` and `description`. Optional: `license`, `allowed-tools`, `metadata`. No other keys are allowed.
+Every `SKILL.md` requires YAML frontmatter. Required fields: `name` and `description`. Optional: `license`, `allowed-tools`, `compatibility`, `metadata`. No other keys are allowed.
 
 ```yaml
 ---

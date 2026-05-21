@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.13"]
 
     steps:
@@ -33,9 +33,11 @@ jobs:
 
       - name: Validate all skills
         run: |
-          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/skill-sync
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/ast-grep
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/docling
           uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/nushell
           uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/skill-creator
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/skill-sync
+          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/tools
           uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/unit-testing
-          uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/docling
           uv run --project .devtools skills/skill-creator/scripts/quick_validate.py skills/uv

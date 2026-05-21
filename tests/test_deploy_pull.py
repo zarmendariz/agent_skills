@@ -34,7 +34,7 @@ class TestPathResolution:
     def test_kilocode_skills_dir_default(self):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("KILOCODE_SKILLS_DIR", None)
-            assert deploy.kilocode_skills_dir() == Path.home() / ".kilocode" / "skills"
+            assert deploy.kilocode_skills_dir() == Path.home() / ".kilo" / "skills"
 
     def test_kilocode_skills_dir_override(self):
         with patch.dict(os.environ, {"KILOCODE_SKILLS_DIR": "/custom/path"}):
@@ -103,7 +103,7 @@ class TestPathResolution:
     def test_kilocode_devtools_dir_default(self):
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("KILOCODE_DEVTOOLS_DIR", None)
-            assert deploy.kilocode_devtools_dir() == Path.home() / ".kilocode" / ".devtools"
+            assert deploy.kilocode_devtools_dir() == Path.home() / ".kilo" / ".devtools"
 
     def test_kilocode_devtools_dir_override(self):
         with patch.dict(os.environ, {"KILOCODE_DEVTOOLS_DIR": "/custom/kilo/devtools"}):
@@ -297,9 +297,10 @@ class TestDeployEndToEnd:
             "KILOCODE_SKILLS_DIR": str(kilo_skills),
             "KILOCODE_DEVTOOLS_DIR": str(tmp_path / "kilo_devtools"),
         }):
-            with patch("deploy.kilocode_settings_dir", return_value=tmp_path / "settings"):
-                with patch("deploy.kilocode_opencode_path", return_value=tmp_path / "opencode.json"):
-                    ok = deploy.deploy_kilocode(mock_repo_root, dry_run=False, force=True)
+            with patch("deploy.kilocode_legacy_skills_dir", return_value=tmp_path / "no_legacy"):
+                with patch("deploy.kilocode_settings_dir", return_value=tmp_path / "settings"):
+                    with patch("deploy.kilocode_opencode_path", return_value=tmp_path / "opencode.json"):
+                        ok = deploy.deploy_kilocode(mock_repo_root, dry_run=False, force=True)
 
         assert ok is True
         assert (kilo_skills / "sample-skill" / "SKILL.md").exists()

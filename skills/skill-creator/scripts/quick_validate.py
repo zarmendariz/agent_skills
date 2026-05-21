@@ -9,9 +9,12 @@ Usage:
 import sys
 from pathlib import Path
 
-# Add shared library to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
-from agent_skills_lib.validation import validate_skill  # noqa: E402
+# Import shared library (available via uv run --project .devtools; fallback for direct execution)
+try:
+    from agent_skills_lib.validation import validate_skill
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
+    from agent_skills_lib.validation import validate_skill  # noqa: E402
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

@@ -8,9 +8,13 @@ Copilot CLI configuration directory (per official docs):
   Skills:  ~/.copilot/skills/
   Instructions: ~/.copilot/copilot-instructions.md
 
-KiloCode CLI configuration directory:
-  Skills:  ~/.kilocode/skills/
-  Settings: ~/.kilocode/cli/global/settings/
+KiloCode / Kilo CLI configuration directory:
+  Skills (current):  ~/.kilo/skills/
+  Skills (legacy):   ~/.kilocode/skills/  (still scanned for backward compat)
+  Settings: ~/.kilo/cli/global/settings/
+
+Cross-client interoperability (agentskills.io standard):
+  Skills:  ~/.agents/skills/
 """
 
 import os
@@ -24,24 +28,33 @@ def repo_root_from_script(script_path: str) -> Path:
 
 
 def kilocode_skills_dir() -> Path:
-    """Global KiloCode skills directory. Override: KILOCODE_SKILLS_DIR."""
+    """Global KiloCode/Kilo CLI skills directory. Override: KILOCODE_SKILLS_DIR.
+
+    Kilo CLI 1.0 uses ~/.kilo/skills/ as primary path.
+    Legacy path ~/.kilocode/skills/ is still scanned for backward compatibility.
+    """
     override = os.environ.get("KILOCODE_SKILLS_DIR")
     if override:
         return Path(override).expanduser()
+    return Path.home() / ".kilo" / "skills"
+
+
+def kilocode_legacy_skills_dir() -> Path:
+    """Legacy KiloCode skills directory (~/.kilocode/skills/). Still scanned by Kilo CLI."""
     return Path.home() / ".kilocode" / "skills"
 
 
 def kilocode_devtools_dir() -> Path:
-    """Global KiloCode .devtools directory. Override: KILOCODE_DEVTOOLS_DIR."""
+    """Global KiloCode/Kilo CLI .devtools directory. Override: KILOCODE_DEVTOOLS_DIR."""
     override = os.environ.get("KILOCODE_DEVTOOLS_DIR")
     if override:
         return Path(override).expanduser()
-    return Path.home() / ".kilocode" / ".devtools"
+    return Path.home() / ".kilo" / ".devtools"
 
 
 def kilocode_settings_dir() -> Path:
-    """Global KiloCode CLI settings directory."""
-    return Path.home() / ".kilocode" / "cli" / "global" / "settings"
+    """Global KiloCode/Kilo CLI settings directory."""
+    return Path.home() / ".kilo" / "cli" / "global" / "settings"
 
 
 def kilocode_opencode_path() -> Path:
@@ -82,3 +95,11 @@ def copilot_instructions_path() -> Path:
     if override:
         return Path(override).expanduser()
     return copilot_home() / "copilot-instructions.md"
+
+
+def agents_skills_dir() -> Path:
+    """Cross-client ~/.agents/skills/ directory (agentskills.io standard). Override: AGENTS_SKILLS_DIR."""
+    override = os.environ.get("AGENTS_SKILLS_DIR")
+    if override:
+        return Path(override).expanduser()
+    return Path.home() / ".agents" / "skills"

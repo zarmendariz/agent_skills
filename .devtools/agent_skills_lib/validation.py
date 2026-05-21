@@ -8,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-ALLOWED_PROPERTIES = frozenset({"name", "description", "license", "allowed-tools", "metadata"})
+ALLOWED_PROPERTIES = frozenset({"name", "description", "license", "allowed-tools", "compatibility", "metadata"})
 MAX_NAME_LENGTH = 64
 MAX_DESCRIPTION_LENGTH = 1024
 

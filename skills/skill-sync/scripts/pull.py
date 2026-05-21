@@ -31,9 +31,12 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-# Add shared library to path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
-from agent_skills_lib import paths as _paths  # noqa: E402
+# Import shared library (available via uv run --project .devtools; fallback for direct execution)
+try:
+    from agent_skills_lib import paths as _paths
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / ".devtools"))
+    from agent_skills_lib import paths as _paths  # noqa: E402
 
 
 # ── Path resolution (delegating to shared module) ─────────────────────────────
@@ -44,6 +47,10 @@ def repo_root() -> Path:
 
 def kilocode_skills_dir() -> Path:
     return _paths.kilocode_skills_dir()
+
+
+def kilocode_legacy_skills_dir() -> Path:
+    return _paths.kilocode_legacy_skills_dir()
 
 
 def kilocode_settings_dir() -> Path:
@@ -60,6 +67,10 @@ def copilot_skills_dir() -> Path:
 
 def copilot_instructions_path() -> Path:
     return _paths.copilot_instructions_path()
+
+
+def agents_skills_dir() -> Path:
+    return _paths.agents_skills_dir()
 
 
 # ── File operations ────────────────────────────────────────────────────────────
@@ -142,10 +153,10 @@ def pull_skills(src_dir: Path, dst_dir: Path, dry_run: bool, force: bool) -> boo
 # ── Pull targets ───────────────────────────────────────────────────────────────
 
 def pull_kilocode(root: Path, dry_run: bool, force: bool) -> bool:
-    print("\n── KiloCode CLI ──────────────────────────────────────────────")
+    print("\n── Kilo CLI ──────────────────────────────────────────────────")
     all_ok = True
 
-    # Skills
+    # Skills (pull from primary path ~/.kilo/skills/)
     all_ok &= pull_skills(
         kilocode_skills_dir(),
         root / "skills",
@@ -197,21 +208,36 @@ def pull_copilot(root: Path, dry_run: bool, force: bool) -> bool:
     return all_ok
 
 
+def pull_agents(root: Path, dry_run: bool, force: bool) -> bool:
+    """Pull skills from the cross-client ~/.agents/skills/ directory."""
+    print("\n── Cross-Client (agentskills.io) ─────────────────────────────")
+    all_ok = True
+
+    all_ok &= pull_skills(
+        agents_skills_dir(),
+        root / "skills",
+        dry_run, force,
+    )
+
+    return all_ok
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser(
         description="Pull skills and config from global CLI installations into the repo."
     )
-    parser.add_argument("--kilocode", action="store_true", help="Pull from KiloCode CLI")
+    parser.add_argument("--kilocode", action="store_true", help="Pull from Kilo CLI")
     parser.add_argument("--copilot", action="store_true", help="Pull from GitHub Copilot CLI")
+    parser.add_argument("--agents", action="store_true", help="Pull from ~/.agents/skills/ (cross-client)")
     parser.add_argument("--all", dest="all_targets", action="store_true", help="Pull from all CLI tools")
     parser.add_argument("--dry-run", "-n", action="store_true", help="Show what would be pulled, make no changes")
     parser.add_argument("--force", "-f", action="store_true", help="Overwrite existing files in repo")
     args = parser.parse_args()
 
-    if not (args.kilocode or args.copilot or args.all_targets):
-        parser.error("Specify at least one target: --kilocode, --copilot, or --all")
+    if not (args.kilocode or args.copilot or args.agents or args.all_targets):
+        parser.error("Specify at least one target: --kilocode, --copilot, --agents, or --all")
 
     root = repo_root()
     print(f"Repository root: {root}")
@@ -222,11 +248,15 @@ def main():
 
     if args.all_targets or args.kilocode:
         ok = pull_kilocode(root, args.dry_run, args.force)
-        results.append(("KiloCode CLI", ok))
+        results.append(("Kilo CLI", ok))
 
     if args.all_targets or args.copilot:
         ok = pull_copilot(root, args.dry_run, args.force)
         results.append(("GitHub Copilot CLI", ok))
+
+    if args.all_targets or args.agents:
+        ok = pull_agents(root, args.dry_run, args.force)
+        results.append(("Cross-Client (~/.agents/)", ok))
 
     print("\n── Summary ───────────────────────────────────────────────────")
     all_ok = True
