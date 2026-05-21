@@ -19,14 +19,47 @@
 
 ## Invocation Patterns
 
-The Bash tool invokes bash. To run Nu commands, use one of these patterns:
+The copilot-cli shell tool is PowerShell on Windows and bash on Linux/macOS.
+To run Nu commands, invoke `nu` through the shell tool:
 
-### Inline one-liners
-```bash
-nu -c "ls | where type == file | get name"
+### PowerShell context (Windows — copilot-cli default)
+
+#### One-liners (single quotes prevent PS `$` expansion)
+```powershell
+nu -c 'ls | where type == file | get name'
 ```
 
-### Here-doc script (preferred for multi-line)
+#### With nu string interpolation
+```powershell
+nu -c 'let x = 42; print $"Value: ($x)"'
+```
+
+#### Multi-line via temp file
+```powershell
+@'
+let x = 42
+print $"Value: ($x)"
+'@ | Set-Content $env:TEMP\__nu.nu -Encoding UTF8; nu $env:TEMP\__nu.nu
+```
+
+#### Script file
+```powershell
+nu C:\path\to\script.nu
+```
+
+#### Passing environment variables
+```powershell
+$env:MY_VAR = "hello"; nu -c 'print $env.MY_VAR'
+```
+
+### Bash context (Linux/macOS)
+
+#### Inline one-liners
+```bash
+nu -c 'ls | where type == file | get name'
+```
+
+#### Here-doc script (preferred for multi-line)
 ```bash
 nu << 'EOF'
 let x = 42
@@ -34,19 +67,21 @@ print $"Value: ($x)"
 EOF
 ```
 
-### Script file
+#### Script file
 ```bash
 nu /path/to/script.nu
 ```
 
 ### With arguments
-```bash
-nu -c "def greet [name] { print $\"Hi ($name)\" }; greet 'world'"
-# or via script file:
-nu script.nu arg1 arg2   # accessed as $args.0, $args.1 or via parameters
+```nu
+# via script file:
+nu script.nu arg1 arg2   # accessed via main command parameters
 ```
 
-**Critical rule**: Use `nu << 'EOF' ... EOF` (single-quoted heredoc) in bash to avoid bash interpolating `$` variables. Only use `nu -c "..."` for short one-liners with no `$` variables.
+**Critical rules:**
+- **PowerShell**: Always use single quotes around nu code (`nu -c '...'`) to prevent `$` interpolation
+- **Bash**: Use single-quoted heredoc (`<< 'EOF'`) to prevent `$` interpolation
+- For complex scripts with mixed quoting: use the temp file pattern
 
 ---
 

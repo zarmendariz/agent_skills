@@ -169,6 +169,26 @@ Do **not** add auxiliary docs (README, CHANGELOG, INSTALLATION_GUIDE, etc.) insi
 
 The `scripts/` utilities are written in Nushell (`.nu`). Run them with `nu scripts/<script>.nu`. The `push-skills.nu` script copies from `skills/` to `~/.kilocode/skills/`; `merge-config.nu` pulls the reverse direction (global config → repo).
 
+### Nushell as Preferred Shell
+
+Nushell (`nu`) is the preferred command execution environment. On Windows, copilot-cli
+hardcodes PowerShell as the shell tool — there is no configuration to change this. To use
+nushell, invoke it through the PowerShell tool:
+
+```powershell
+# One-liner (single quotes prevent PowerShell $-interpolation)
+nu -c 'ls | where type == file | sort-by size -r | first 10'
+
+# Multi-line via temp file
+@'
+let files = ls | where type == file
+print $"Found ($files | length) files"
+'@ | Set-Content $env:TEMP\__nu.nu -Encoding UTF8; nu $env:TEMP\__nu.nu
+```
+
+The `nushell` skill provides comprehensive language reference and invocation patterns.
+Always prefer `nu -c '...'` over raw PowerShell for data processing and querying tasks.
+
 ## opencode.json
 
 Tracks KiloCode/OpenCode configuration. Sensitive files (`config.json`, `secrets.json`, `global-state.json`, cache directories) are intentionally excluded from the repo.
